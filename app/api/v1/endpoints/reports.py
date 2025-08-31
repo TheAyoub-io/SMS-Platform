@@ -36,29 +36,21 @@ def get_campaign_report(
         raise HTTPException(status_code=404, detail="Report not found for this campaign")
     return report
 
-@router.get("/export/{format}")
-def export_report(
-    format: str,
+@router.get("/export/csv", response_model=StreamingResponse)
+def export_report_csv(
     campaign_id: int,
     db: Session = Depends(get_db),
     current_user: Agent = Depends(get_current_user),
 ):
     """
-    Export a campaign report in a specific format (csv or pdf).
+    Export a campaign report in CSV format.
     """
-    if format not in ["csv", "pdf"]:
-        raise HTTPException(status_code=400, detail="Unsupported format. Use 'csv' or 'pdf'.")
-
-    export_result = report_service.export_campaign_report(db, campaign_id=campaign_id, format=format)
+    export_result = report_service.export_campaign_report(db, campaign_id=campaign_id, format="csv")
     if export_result is None:
         raise HTTPException(status_code=404, detail="Report not found for this campaign")
 
-    if format == "csv":
-        return StreamingResponse(
-            iter([export_result]),
-            media_type="text/csv",
-            headers={"Content-Disposition": f"attachment; filename=report_{campaign_id}.csv"}
-        )
-    else: # pdf
-        # This part is still a placeholder
-        return {"message": export_result}
+    return StreamingResponse(
+        iter([export_result]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=report_{campaign_id}.csv"}
+    )

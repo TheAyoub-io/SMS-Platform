@@ -91,6 +91,19 @@ def import_contacts(
 ):
     """
     Import contacts from a CSV or Excel file.
+
+    The file should have the following columns:
+    - **FirstName**: The first name of the contact.
+    - **LastName**: The last name of the contact.
+    - **PhoneNumber**: The phone number of the contact (must be unique).
+    - **Email**: The email address of the contact (optional).
+    - **OptInStatus**: The opt-in status (True/False, optional, defaults to True).
+    - **Segment**: A custom segment for the contact (optional).
+    - **Zone**: The geographical zone of the contact (optional).
+    - **ClientType**: The type of client (optional).
+
+    The endpoint will validate each row. If any row fails validation, the entire
+    import will be rolled back and a detailed error report will be returned.
     """
     return contact_service.import_contacts_from_file(db=db, file=file)
 

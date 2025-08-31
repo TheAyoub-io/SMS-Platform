@@ -8,6 +8,7 @@ from app.main import app
 from app.db.base import Base
 from app.db.session import get_db
 
+# The test DB URL is now set via pytest.ini, but we define it here for the engine
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(

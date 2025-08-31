@@ -4,8 +4,6 @@ from app.api.v1.schemas.auth import UserLogin, Token
 from app.core.security import verify_password, create_access_token
 from app.db.session import get_db
 from app.db.models import Agent
-from app.api.v1.schemas import user as user_schema
-from app.services import user_service
 
 router = APIRouter()
 
@@ -28,17 +26,3 @@ def login(form_data: UserLogin, db: Session = Depends(get_db)):
         subject=user.identifiant,
     )
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@router.post("/register", response_model=user_schema.User)
-def register_user(
-    user: user_schema.UserCreate,
-    db: Session = Depends(get_db),
-):
-    """
-    Create new user.
-    """
-    db_user = user_service.get_user_by_username(db, username=user.username)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Username already registered")
-    return user_service.create_user(db=db, user=user)

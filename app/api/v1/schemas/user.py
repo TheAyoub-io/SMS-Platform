@@ -1,9 +1,9 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 
 class UserBase(BaseModel):
     nom_agent: str
-    username: str
+    username: str = Field(validation_alias='identifiant')
     role: str
     is_active: bool = True
 
@@ -19,6 +19,4 @@ class UserUpdate(BaseModel):
 
 class User(UserBase):
     id_agent: int
-
-    class Config:
-        from_attributes = True # This fixes the 'orm_mode' warning
+    model_config = ConfigDict(from_attributes=True)

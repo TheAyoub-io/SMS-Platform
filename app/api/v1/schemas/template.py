@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, Dict
 
 class TemplateBase(BaseModel):
@@ -16,8 +16,7 @@ class TemplateInDBBase(TemplateBase):
     id_modele: int
     created_by: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Template(TemplateInDBBase):
     pass

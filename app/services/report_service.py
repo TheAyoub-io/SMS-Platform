@@ -22,25 +22,21 @@ def get_dashboard_stats(db: Session):
 def export_campaign_report(db: Session, campaign_id: int, format: str):
     report = get_campaign_report(db, campaign_id)
     if report:
-        if format == "csv":
-            report_data = {
-                "id_rapport": [report.id_rapport],
-                "id_campagne": [report.id_campagne],
-                "total_sent": [report.total_sent],
-                "total_delivered": [report.total_delivered],
-                "total_failed": [report.total_failed],
-                "taux_ouverture": [report.taux_ouverture],
-                "taux_clics": [report.taux_clics],
-                "taux_conversion": [report.taux_conversion],
-                "nombre_desabonnements": [report.nombre_desabonnements],
-                "total_cost": [report.total_cost],
-                "last_updated": [report.last_updated],
-            }
-            df = pd.DataFrame(report_data)
-            stream = io.StringIO()
-            df.to_csv(stream, index=False)
-            return stream.getvalue()
-        elif format == "pdf":
-            # PDF generation is more complex and would require a library like reportlab
-            return "PDF export is not implemented yet."
+        report_data = {
+            "id_rapport": [report.id_rapport],
+            "id_campagne": [report.id_campagne],
+            "total_sent": [report.total_sent],
+            "total_delivered": [report.total_delivered],
+            "total_failed": [report.total_failed],
+            "taux_ouverture": [report.taux_ouverture],
+            "taux_clics": [report.taux_clics],
+            "taux_conversion": [report.taux_conversion],
+            "nombre_desabonnements": [report.nombre_desabonnements],
+            "total_cost": [report.total_cost],
+            "last_updated": [report.last_updated],
+        }
+        df = pd.DataFrame(report_data)
+        stream = io.StringIO()
+        df.to_csv(stream, index=False)
+        return stream.getvalue()
     return None
