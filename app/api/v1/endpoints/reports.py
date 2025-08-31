@@ -36,7 +36,7 @@ def get_campaign_report(
         raise HTTPException(status_code=404, detail="Report not found for this campaign")
     return report
 
-@router.get("/export/csv", response_model=StreamingResponse)
+@router.get("/export/csv")
 def export_report_csv(
     campaign_id: int,
     db: Session = Depends(get_db),
