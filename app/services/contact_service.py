@@ -1,11 +1,13 @@
+import io
 import pandas as pd
 from sqlalchemy.orm import Session
-from app.db.models import Contact
-from app.api.v1.schemas.contact import ContactCreate, ContactUpdate
-from fastapi import UploadFile
-import io
 from sqlalchemy import distinct
 from pydantic import ValidationError
+from fastapi import UploadFile
+
+from app.db.models import Contact
+from app.api.v1.schemas.contact import ContactCreate, ContactUpdate
+
 
 def create_contact(db: Session, contact: ContactCreate):
     db_contact = Contact(**contact.model_dump())
@@ -39,12 +41,6 @@ def delete_contact(db: Session, contact_id: int):
 def import_contacts_from_file(db: Session, file: UploadFile):
     try:
         content = file.file.read()
-        if file.filename.endswith('.csv'):
-            df = pd.read_csv(io.StringIO(content.decode('utf-8')))
-        elif file.filename.endswith(('.xls', '.xlsx')):
-            df = pd.read_excel(io.BytesIO(content))
-        else:
-            return {"error": "Unsupported file format. Please use CSV or Excel."}
 
         # Define mapping from expected CSV/Excel columns to model fields
         column_mapping = {
@@ -57,6 +53,22 @@ def import_contacts_from_file(db: Session, file: UploadFile):
             'Zone': 'zone_geographique',
             'ClientType': 'type_client'
         }
+
+        # Explicitly define dtypes to prevent pandas from guessing incorrectly
+        # All text columns should be read as strings.
+        string_columns = [
+            'FirstName', 'LastName', 'PhoneNumber', 'Email',
+            'Segment', 'Zone', 'ClientType'
+        ]
+        dtype_mapping = {col: str for col in string_columns}
+
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(io.StringIO(content.decode('utf-8')), dtype=dtype_mapping)
+        elif file.filename.endswith(('.xls', '.xlsx')):
+            df = pd.read_excel(io.BytesIO(content), dtype=dtype_mapping)
+        else:
+            return {"error": "Unsupported file format. Please use CSV or Excel."}
+
         df.rename(columns=column_mapping, inplace=True)
 
         contacts_to_create = []
@@ -64,18 +76,9 @@ def import_contacts_from_file(db: Session, file: UploadFile):
 
         for index, row in df.iterrows():
             try:
-                contact_dict = {
-                    "nom": row.get("nom"),
-                    "prenom": row.get("prenom"),
-                    "numero_telephone": row.get("numero_telephone"),
-                    "email": row.get("email"),
-                    "statut_opt_in": row.get("statut_opt_in", True),
-                    "segment": row.get("segment"),
-                    "zone_geographique": row.get("zone_geographique"),
-                    "type_client": row.get("type_client"),
-                }
+                contact_dict = row.to_dict()
                 # Filter out None and NaN values so Pydantic can use defaults
-                contact_dict_cleaned = {k: v for k, v in contact_dict.items() if v is not None and pd.notna(v)}
+                contact_dict_cleaned = {k: v for k, v in contact_dict.items() if pd.notna(v)}
 
                 contact_data = ContactCreate(**contact_dict_cleaned)
                 contacts_to_create.append(contact_data.model_dump())
