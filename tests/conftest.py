@@ -1,13 +1,15 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from app.services import user_service
+
 from app.main import app
 from app.db.base import Base
 from app.db.session import get_db
+from app.services import user_service
 from app.api.v1.schemas import user as user_schema
+
 # The test DB URL is now set via pytest.ini, but we define it here for the engine
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 

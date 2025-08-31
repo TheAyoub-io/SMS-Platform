@@ -64,8 +64,20 @@ def import_contacts_from_file(db: Session, file: UploadFile):
 
         for index, row in df.iterrows():
             try:
-                # Pydantic will validate the types
-                contact_data = ContactCreate(**row.to_dict())
+                contact_dict = {
+                    "nom": row.get("nom"),
+                    "prenom": row.get("prenom"),
+                    "numero_telephone": row.get("numero_telephone"),
+                    "email": row.get("email"),
+                    "statut_opt_in": row.get("statut_opt_in", True),
+                    "segment": row.get("segment"),
+                    "zone_geographique": row.get("zone_geographique"),
+                    "type_client": row.get("type_client"),
+                }
+                # Filter out None and NaN values so Pydantic can use defaults
+                contact_dict_cleaned = {k: v for k, v in contact_dict.items() if v is not None and pd.notna(v)}
+
+                contact_data = ContactCreate(**contact_dict_cleaned)
                 contacts_to_create.append(contact_data.model_dump())
             except ValidationError as e:
                 errors.append({"row": index + 2, "errors": e.errors()}) # +2 for header and 0-indexing
@@ -82,7 +94,6 @@ def import_contacts_from_file(db: Session, file: UploadFile):
 
     except Exception as e:
         db.rollback()
-        # More specific error handling can be added here
         return {"error": f"An unexpected error occurred: {str(e)}"}
 
 def get_contact_segments(db: Session):
