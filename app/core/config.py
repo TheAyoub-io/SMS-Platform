@@ -1,9 +1,6 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 from pathlib import Path
-
-env_path = Path(__file__).parent.parent.parent / ".env"
-
 
 class Settings(BaseSettings):
     DATABASE_URL: str
@@ -14,10 +11,10 @@ class Settings(BaseSettings):
     TWILIO_PHONE_NUMBER: str
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
     REDIS_URL: str = "redis://localhost:6379"
-    MAX_FILE_SIZE: int = 10485760  # 10MB
+    MAX_FILE_SIZE: int = 10485760
     UPLOAD_DIRECTORY: str = "./uploads"
 
     class Config:
-        env_file = env_path
+        env_file = ".env"
 
 settings = Settings()
