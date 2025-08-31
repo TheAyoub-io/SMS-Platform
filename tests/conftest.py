@@ -3,9 +3,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import Session
 
 from app.main import app
 from app.db.base import Base
+from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.services import user_service
 from app.api.v1.schemas import user as user_schema
