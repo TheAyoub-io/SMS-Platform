@@ -1,12 +1,27 @@
 from fastapi import FastAPI
-from app.api.v1.endpoints import auth, campaigns, contacts
+from app.api.v1.endpoints import auth, campaigns, contacts, templates, messages, reports, users
 
 app = FastAPI()
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(campaigns.router, prefix="/campaigns", tags=["campaigns"])
 app.include_router(contacts.router, prefix="/contacts", tags=["contacts"])
+app.include_router(templates.router, prefix="/templates", tags=["templates"])
+app.include_router(messages.router, prefix="/messages", tags=["messages"])
+app.include_router(reports.router, prefix="/reports", tags=["reports"])
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {
+        "message": "SMS Campaign Platform API",
+        "status": "running",
+        "version": "1.0.0", # I will set it to 1.0.0 as it is the first version
+        "features": [
+            "Advanced Contact Management",
+            "Excel/CSV Import",
+            "Contact Segmentation",
+            "Personalized SMS Campaigns",
+            "Campaign Analytics"
+        ]
+    }

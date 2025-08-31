@@ -5,6 +5,7 @@ from app.api.v1.schemas.contact import ContactCreate, ContactUpdate
 from fastapi import UploadFile
 import io
 from sqlalchemy import distinct
+from pydantic import ValidationError
 
 def create_contact(db: Session, contact: ContactCreate):
     db_contact = Contact(**contact.model_dump())
@@ -37,30 +38,52 @@ def delete_contact(db: Session, contact_id: int):
 
 def import_contacts_from_file(db: Session, file: UploadFile):
     try:
-        # Read the file content into a pandas DataFrame
         content = file.file.read()
         if file.filename.endswith('.csv'):
             df = pd.read_csv(io.StringIO(content.decode('utf-8')))
         elif file.filename.endswith(('.xls', '.xlsx')):
             df = pd.read_excel(io.BytesIO(content))
         else:
-            return {"error": "Unsupported file format"}
+            return {"error": "Unsupported file format. Please use CSV or Excel."}
 
-        # Assume the columns are named correctly
-        # Add validation and error handling here
+        # Define mapping from expected CSV/Excel columns to model fields
+        column_mapping = {
+            'FirstName': 'prenom',
+            'LastName': 'nom',
+            'PhoneNumber': 'numero_telephone',
+            'Email': 'email',
+            'OptInStatus': 'statut_opt_in',
+            'Segment': 'segment',
+            'Zone': 'zone_geographique',
+            'ClientType': 'type_client'
+        }
+        df.rename(columns=column_mapping, inplace=True)
+
         contacts_to_create = []
-        for index, row in df.iterrows():
-            contact_data = ContactCreate(**row.to_dict())
-            contacts_to_create.append(contact_data)
+        errors = []
 
-        # Bulk insert the contacts
-        db.bulk_insert_mappings(Contact, [c.model_dump() for c in contacts_to_create])
-        db.commit()
+        for index, row in df.iterrows():
+            try:
+                # Pydantic will validate the types
+                contact_data = ContactCreate(**row.to_dict())
+                contacts_to_create.append(contact_data.model_dump())
+            except ValidationError as e:
+                errors.append({"row": index + 2, "errors": e.errors()}) # +2 for header and 0-indexing
+
+        if errors:
+            db.rollback()
+            return {"message": "Import failed due to validation errors.", "errors": errors}
+
+        if contacts_to_create:
+            db.bulk_insert_mappings(Contact, contacts_to_create)
+            db.commit()
+
         return {"message": f"{len(contacts_to_create)} contacts imported successfully."}
 
     except Exception as e:
         db.rollback()
-        return {"error": str(e)}
+        # More specific error handling can be added here
+        return {"error": f"An unexpected error occurred: {str(e)}"}
 
 def get_contact_segments(db: Session):
     return db.query(distinct(Contact.segment)).all()
