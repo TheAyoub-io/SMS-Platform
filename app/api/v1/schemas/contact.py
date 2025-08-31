@@ -1,0 +1,30 @@
+from pydantic import BaseModel, EmailStr
+from datetime import datetime
+from typing import Optional
+
+class ContactBase(BaseModel):
+    nom: str
+    prenom: str
+    numero_telephone: str
+    email: Optional[EmailStr] = None
+    statut_opt_in: bool = True
+    segment: Optional[str] = None
+    zone_geographique: Optional[str] = None
+    type_client: Optional[str] = None
+
+class ContactCreate(ContactBase):
+    pass
+
+class ContactUpdate(ContactBase):
+    pass
+
+class ContactInDBBase(ContactBase):
+    id_contact: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class Contact(ContactInDBBase):
+    pass
