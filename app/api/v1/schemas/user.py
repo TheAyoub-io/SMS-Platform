@@ -21,4 +21,4 @@ class User(UserBase):
     id_agent: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True # This fixes the 'orm_mode' warning
