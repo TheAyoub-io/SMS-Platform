@@ -5,7 +5,6 @@ from app.core.security import get_password_hash
 
 def create_user(db: Session, user: UserCreate):
     user_data = user.model_dump()
-    user_data["identifiant"] = user_data.pop("username") # Map username to identifiant
     hashed_password = get_password_hash(user_data.pop("password"))
     db_user = Agent(**user_data, mot_de_passe=hashed_password)
     db.add(db_user)
@@ -26,8 +25,6 @@ def update_user(db: Session, user_id: int, user: UserUpdate):
     db_user = get_user(db, user_id)
     if db_user:
         update_data = user.model_dump(exclude_unset=True)
-        if "username" in update_data:
-            update_data["identifiant"] = update_data.pop("username")
         if "password" in update_data:
             update_data["mot_de_passe"] = get_password_hash(update_data.pop("password"))
 

@@ -8,5 +8,5 @@ class TokenData(BaseModel):
     username: str | None = None
 
 class UserLogin(BaseModel):
-    username: str
+    identifiant: str
     password: str

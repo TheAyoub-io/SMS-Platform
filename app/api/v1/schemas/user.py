@@ -1,9 +1,9 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class UserBase(BaseModel):
     nom_agent: str
-    username: str = Field(validation_alias='identifiant')
+    identifiant: str
     role: str
     is_active: bool = True
 
@@ -12,7 +12,7 @@ class UserCreate(UserBase):
 
 class UserUpdate(BaseModel):
     nom_agent: Optional[str] = None
-    username: Optional[str] = None
+    identifiant: Optional[str] = None
     role: Optional[str] = None
     is_active: Optional[bool] = None
     password: Optional[str] = None

@@ -12,7 +12,7 @@ def login(form_data: UserLogin, db: Session = Depends(get_db)):
     """
     Logs in a user and returns an access token.
     """
-    user = db.query(Agent).filter(Agent.identifiant == form_data.username).first()
+    user = db.query(Agent).filter(Agent.identifiant == form_data.identifiant).first()
     if not user or not verify_password(form_data.password, user.mot_de_passe):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
