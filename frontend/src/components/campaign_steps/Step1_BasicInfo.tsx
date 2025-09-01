@@ -1,14 +1,9 @@
 import React from 'react';
 import { Form, Input, DatePicker, Select } from 'antd';
-import type { FormInstance } from 'antd';
 
-interface Step1Props {
-  form: FormInstance;
-}
-
-const Step1_BasicInfo: React.FC<Step1Props> = ({ form }) => {
+const Step1_BasicInfo: React.FC = () => {
   return (
-    <Form form={form} layout="vertical" autoComplete="off">
+    <>
       <Form.Item name="nom_campagne" label="Campaign Name" rules={[{ required: true }]}>
         <Input />
       </Form.Item>
@@ -28,7 +23,7 @@ const Step1_BasicInfo: React.FC<Step1Props> = ({ form }) => {
           <Select.Option value="scheduled">Scheduled</Select.Option>
         </Select>
       </Form.Item>
-    </Form>
+    </>
   );
 };
 

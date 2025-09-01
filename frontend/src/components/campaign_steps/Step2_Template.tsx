@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Select, Input } from 'antd';
-import type { FormInstance } from 'antd';
+import { Form, Select, Input, message } from 'antd';
 import api from '../../services/api';
 
 interface Template {
@@ -9,13 +8,10 @@ interface Template {
   contenu_modele: string;
 }
 
-interface Step2Props {
-  form: FormInstance;
-}
-
-const Step2_Template: React.FC<Step2Props> = ({ form }) => {
+const Step2_Template: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
+  const form = Form.useFormInstance();
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -23,7 +19,7 @@ const Step2_Template: React.FC<Step2Props> = ({ form }) => {
         const response = await api.get('/templates');
         setTemplates(response.data);
       } catch (error) {
-        console.error('Failed to fetch templates:', error);
+        message.error('Failed to fetch templates.');
       }
     };
     fetchTemplates();
@@ -40,7 +36,7 @@ const Step2_Template: React.FC<Step2Props> = ({ form }) => {
   };
 
   return (
-    <Form form={form} layout="vertical" autoComplete="off">
+    <>
       <Form.Item name="id_modele" label="Choose a Template (Optional)">
         <Select
           placeholder="Select a template"
@@ -61,7 +57,7 @@ const Step2_Template: React.FC<Step2Props> = ({ form }) => {
       >
         <Input.TextArea rows={4} disabled={!!selectedTemplate} />
       </Form.Item>
-    </Form>
+    </>
   );
 };
 

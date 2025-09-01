@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.db.models import MailingList, Contact
-from app.api.v1.schemas.mailing_list import MailingListCreate
+from app.api.v1.schemas.mailing_list import MailingListCreate, MailingListUpdate
 
 def create_mailing_list(db: Session, mailing_list: MailingListCreate):
     """
