@@ -42,20 +42,11 @@ def import_contacts_from_file(db: Session, file: UploadFile):
     try:
         content = file.file.read()
 
-        # Define mapping from expected CSV/Excel columns to model fields
         column_mapping = {
-            'FirstName': 'prenom',
-            'LastName': 'nom',
-            'PhoneNumber': 'numero_telephone',
-            'Email': 'email',
-            'OptInStatus': 'statut_opt_in',
-            'Segment': 'segment',
-            'Zone': 'zone_geographique',
-            'ClientType': 'type_client'
+            'FirstName': 'prenom', 'LastName': 'nom', 'PhoneNumber': 'numero_telephone',
+            'Email': 'email', 'OptInStatus': 'statut_opt_in', 'Segment': 'segment',
+            'Zone': 'zone_geographique', 'ClientType': 'type_client'
         }
-
-        # Explicitly define dtypes to prevent pandas from guessing incorrectly
-        # All text columns should be read as strings.
         string_columns = [
             'FirstName', 'LastName', 'PhoneNumber', 'Email',
             'Segment', 'Zone', 'ClientType'
@@ -73,17 +64,20 @@ def import_contacts_from_file(db: Session, file: UploadFile):
 
         contacts_to_create = []
         errors = []
+        model_fields = ContactCreate.model_fields.keys()
 
         for index, row in df.iterrows():
             try:
                 contact_dict = row.to_dict()
-                # Filter out None and NaN values so Pydantic can use defaults
                 contact_dict_cleaned = {k: v for k, v in contact_dict.items() if pd.notna(v)}
 
-                contact_data = ContactCreate(**contact_dict_cleaned)
+                # Filter dict to only include keys that are valid for the Pydantic model
+                filtered_dict = {k: v for k, v in contact_dict_cleaned.items() if k in model_fields}
+
+                contact_data = ContactCreate(**filtered_dict)
                 contacts_to_create.append(contact_data.model_dump())
             except ValidationError as e:
-                errors.append({"row": index + 2, "errors": e.errors()}) # +2 for header and 0-indexing
+                errors.append({"row": index + 2, "errors": e.errors()})
 
         if errors:
             db.rollback()
