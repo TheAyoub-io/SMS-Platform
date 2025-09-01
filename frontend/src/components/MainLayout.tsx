@@ -1,18 +1,26 @@
 import React from 'react';
-import { Layout, Menu } from 'antd';
-import { Link, Outlet } from 'react-router-dom';
+import { Layout, Menu, Button, Flex } from 'antd';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import {
   DashboardOutlined,
   MessageOutlined,
   ContactsOutlined,
   TeamOutlined,
   SettingOutlined,
-  FileTextOutlined, // Import new icon
+  FileTextOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 
-const { Sider, Content } = Layout;
+const { Header, Sider, Content } = Layout;
 
 const MainLayout: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    navigate('/login');
+  };
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider>
@@ -39,9 +47,16 @@ const MainLayout: React.FC = () => {
         </Menu>
       </Sider>
       <Layout>
+        <Header style={{ padding: '0 24px', background: '#fff' }}>
+          <Flex justify="flex-end" align="center" style={{ height: '100%' }}>
+            <Button type="primary" icon={<LogoutOutlined />} onClick={handleLogout}>
+              Logout
+            </Button>
+          </Flex>
+        </Header>
         <Content style={{ margin: '24px 16px 0' }}>
           <div style={{ padding: 24, minHeight: 360, background: '#fff' }}>
-            <Outlet /> {/* This is where the nested page component will be rendered */}
+            <Outlet />
           </div>
         </Content>
       </Layout>
