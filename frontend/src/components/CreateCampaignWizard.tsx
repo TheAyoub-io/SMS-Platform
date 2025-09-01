@@ -42,15 +42,15 @@ const CreateCampaignWizard: React.FC<CreateCampaignWizardProps> = ({ visible, on
 
   const handleDone = async () => {
     try {
-      const values = await form.validateFields();
-      const allData = { ...campaignData, ...values };
+      // Use getFieldsValue(true) to get all form values, even from unmounted steps
+      const allData = form.getFieldsValue(true);
 
       // 1. Create the mailing list
       const mailingListData = {
         nom_liste: allData.nom_liste,
-        description: "", // Add description
+        description: "",
         contact_ids: allData.contact_ids || [],
-        id_campagne: null, // Add id_campagne
+        id_campagne: null,
       };
       const mailingListResponse = await api.post('/mailing-lists/', mailingListData);
       const mailingListId = mailingListResponse.data.id_liste;
