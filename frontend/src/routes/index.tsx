@@ -5,9 +5,9 @@ import ProtectedRoute from "./ProtectedRoute";
 import DashboardPage from "../pages/DashboardPage";
 import CampaignsPage from "../pages/CampaignsPage";
 import ContactsPage from "../pages/ContactsPage";
+import UsersPage from "../pages/UsersPage";
 
 // Placeholder for other pages
-const UsersPage = () => <div>User Management Page</div>;
 const SettingsPage = () => <div>Settings Page</div>;
 
 export const router = createBrowserRouter([
