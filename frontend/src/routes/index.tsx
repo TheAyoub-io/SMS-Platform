@@ -4,9 +4,9 @@ import MainLayout from "../components/MainLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardPage from "../pages/DashboardPage";
 import CampaignsPage from "../pages/CampaignsPage";
+import ContactsPage from "../pages/ContactsPage";
 
 // Placeholder for other pages
-const ContactsPage = () => <div>Contacts Page</div>;
 const UsersPage = () => <div>User Management Page</div>;
 const SettingsPage = () => <div>Settings Page</div>;
 
