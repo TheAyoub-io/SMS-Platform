@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import auth, campaigns, contacts, templates, messages, reports, users, mailing_lists
+from app.api.v1.endpoints import auth, campaigns, contacts, templates, messages, reports, users
 
 app = FastAPI()
 
@@ -17,7 +17,6 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(campaigns.router, prefix="/campaigns", tags=["campaigns"])
 app.include_router(contacts.router, prefix="/contacts", tags=["contacts"])
-app.include_router(mailing_lists.router, prefix="/mailing-lists", tags=["mailing-lists"])
 app.include_router(templates.router, prefix="/templates", tags=["templates"])
 app.include_router(messages.router, prefix="/messages", tags=["messages"])
 app.include_router(reports.router, prefix="/reports", tags=["reports"])
