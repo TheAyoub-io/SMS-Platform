@@ -6,6 +6,7 @@ import DashboardPage from "../pages/DashboardPage";
 import CampaignsPage from "../pages/CampaignsPage";
 import ContactsPage from "../pages/ContactsPage";
 import UsersPage from "../pages/UsersPage";
+import TemplatesPage from "../pages/TemplatesPage";
 
 // Placeholder for other pages
 const SettingsPage = () => <div>Settings Page</div>;
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
           {
             path: "contacts",
             element: <ContactsPage />,
+          },
+          {
+            path: "templates",
+            element: <TemplatesPage />,
           },
           {
             path: "users",
