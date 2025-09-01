@@ -48,7 +48,9 @@ const CreateCampaignWizard: React.FC<CreateCampaignWizardProps> = ({ visible, on
       // 1. Create the mailing list
       const mailingListData = {
         nom_liste: allData.nom_liste,
+        description: "", // Add description
         contact_ids: allData.contact_ids || [],
+        id_campagne: null, // Add id_campagne
       };
       const mailingListResponse = await api.post('/mailing-lists/', mailingListData);
       const mailingListId = mailingListResponse.data.id_liste;
