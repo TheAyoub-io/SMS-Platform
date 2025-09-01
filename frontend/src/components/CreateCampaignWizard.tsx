@@ -14,20 +14,18 @@ interface CreateCampaignWizardProps {
 
 const CreateCampaignWizard: React.FC<CreateCampaignWizardProps> = ({ visible, onCancel, onSuccess }) => {
   const [current, setCurrent] = useState(0);
-  const [campaignData, setCampaignData] = useState<any>({});
   const [form] = Form.useForm();
 
   const steps = [
-    { title: 'Basic Info', content: <Step1_BasicInfo form={form} /> },
-    { title: 'Template', content: <Step2_Template form={form} /> },
-    { title: 'Audience', content: <Step3_Audience form={form} /> },
-    { title: 'Review', content: <Step4_Review campaignData={campaignData} /> },
+    { title: 'Basic Info', content: <Step1_BasicInfo /> },
+    { title: 'Template', content: <Step2_Template /> },
+    { title: 'Audience', content: <Step3_Audience /> },
+    { title: 'Review', content: <Step4_Review campaignData={form.getFieldsValue(true)} /> },
   ];
 
   const next = async () => {
     try {
-      const values = await form.validateFields();
-      setCampaignData({ ...campaignData, ...values });
+      await form.validateFields();
       setCurrent(current + 1);
     } catch (info) {
       console.log('Validate Failed:', info);
@@ -35,17 +33,13 @@ const CreateCampaignWizard: React.FC<CreateCampaignWizardProps> = ({ visible, on
   };
 
   const prev = () => {
-    const values = form.getFieldsValue();
-    setCampaignData({ ...campaignData, ...values });
     setCurrent(current - 1);
   };
 
   const handleDone = async () => {
     try {
-      // Use getFieldsValue(true) to get all form values, even from unmounted steps
       const allData = form.getFieldsValue(true);
 
-      // 1. Create the mailing list
       const mailingListData = {
         nom_liste: allData.nom_liste,
         description: "",
@@ -55,7 +49,6 @@ const CreateCampaignWizard: React.FC<CreateCampaignWizardProps> = ({ visible, on
       const mailingListResponse = await api.post('/mailing-lists/', mailingListData);
       const mailingListId = mailingListResponse.data.id_liste;
 
-      // 2. Create the campaign as a draft
       const campaignDraftPayload = {
         nom_campagne: allData.nom_campagne,
         date_debut: allData.date_range[0].toISOString(),
@@ -67,10 +60,8 @@ const CreateCampaignWizard: React.FC<CreateCampaignWizardProps> = ({ visible, on
       const campaignResponse = await api.post('/campaigns/', campaignDraftPayload);
       const campaignId = campaignResponse.data.id_campagne;
 
-      // 3. Update the mailing list with the campaign ID
       await api.put(`/mailing-lists/${mailingListId}`, { id_campagne: campaignId });
 
-      // 4. Update the campaign to scheduled
       const campaignUpdatePayload = {
         ...campaignDraftPayload,
         statut: 'scheduled',
@@ -114,7 +105,13 @@ const CreateCampaignWizard: React.FC<CreateCampaignWizardProps> = ({ visible, on
       }
     >
       <Steps current={current} items={items} />
-      <div style={{ marginTop: 24 }}>{steps[current].content}</div>
+      <Form form={form} layout="vertical" autoComplete="off" style={{ marginTop: 24 }}>
+        {steps.map((step, index) => (
+          <div key={step.title} style={{ display: index === current ? 'block' : 'none' }}>
+            {step.content}
+          </div>
+        ))}
+      </Form>
     </Modal>
   );
 };

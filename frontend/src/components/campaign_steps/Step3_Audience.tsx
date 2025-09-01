@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Table, message } from 'antd';
-import type { FormInstance } from 'antd/es/form';
 import api from '../../services/api';
 
 interface Contact {
@@ -11,14 +10,11 @@ interface Contact {
   email: string;
 }
 
-interface Step3AudienceProps {
-  form: FormInstance;
-}
-
-const Step3_Audience: React.FC<Step3AudienceProps> = ({ form }) => {
+const Step3_Audience: React.FC = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
+  const form = Form.useFormInstance();
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -60,6 +56,9 @@ const Step3_Audience: React.FC<Step3AudienceProps> = ({ form }) => {
         rules={[{ required: true, message: 'Please input a name for your audience list!' }]}
       >
         <Input placeholder="e.g., VIP Clients June 2024" />
+      </Form.Item>
+      <Form.Item name="contact_ids" hidden>
+        <Input />
       </Form.Item>
       <Table
         rowSelection={rowSelection}
