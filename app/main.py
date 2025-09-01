@@ -1,7 +1,17 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints import auth, campaigns, contacts, templates, messages, reports, users
 
 app = FastAPI()
+
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(users.router, prefix="/users", tags=["users"])
@@ -16,7 +26,7 @@ def read_root():
     return {
         "message": "SMS Campaign Platform API",
         "status": "running",
-        "version": "1.0.0", # I will set it to 1.0.0 as it is the first version
+        "version": "1.0.0",
         "features": [
             "Advanced Contact Management",
             "Excel/CSV Import",

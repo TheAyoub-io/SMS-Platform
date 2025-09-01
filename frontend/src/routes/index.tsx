@@ -1,8 +1,14 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import LoginPage from "../pages/LoginPage";
+import MainLayout from "../components/MainLayout";
+import ProtectedRoute from "./ProtectedRoute";
+import DashboardPage from "../pages/DashboardPage";
 
-// Placeholder for the dashboard
-const Dashboard = () => <div>Dashboard Page</div>;
+// Placeholder for other pages
+const CampaignsPage = () => <div>Campaigns Page</div>;
+const ContactsPage = () => <div>Contacts Page</div>;
+const UsersPage = () => <div>User Management Page</div>;
+const SettingsPage = () => <div>Settings Page</div>;
 
 export const router = createBrowserRouter([
   {
@@ -10,11 +16,39 @@ export const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-    path: "/dashboard",
-    element: <Dashboard />,
-  },
-  {
     path: "/",
-    element: <LoginPage />, // Default to login page
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <MainLayout />,
+        children: [
+          {
+            path: "dashboard",
+            element: <DashboardPage />,
+          },
+          {
+            path: "campaigns",
+            element: <CampaignsPage />,
+          },
+          {
+            path: "contacts",
+            element: <ContactsPage />,
+          },
+          {
+            path: "users",
+            element: <UsersPage />,
+          },
+          {
+            path: "settings",
+            element: <SettingsPage />,
+          },
+          {
+            // Redirect from root to dashboard if logged in
+            path: "",
+            element: <Navigate to="/dashboard" replace />,
+          },
+        ],
+      },
+    ],
   },
 ]);
