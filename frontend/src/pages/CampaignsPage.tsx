@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Table, Button, Space, Typography, message, Popconfirm } from 'antd';
 import type { TableProps } from 'antd';
 import api from '../services/api';
-import CreateCampaignWizard from '../components/CreateCampaignWizard';
 
 const { Title } = Typography;
 
@@ -18,7 +17,6 @@ export interface Campaign {
 const CampaignsPage = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isWizardVisible, setIsWizardVisible] = useState(false);
 
   const fetchCampaigns = async () => {
     try {
@@ -72,15 +70,11 @@ const CampaignsPage = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Title level={2}>Campaigns</Title>
-        <Button type="primary" onClick={() => setIsWizardVisible(true)}>
+        <Button type="primary">
           Create Campaign
         </Button>
       </div>
       <Table columns={columns} dataSource={campaigns} rowKey="id_campagne" loading={loading} />
-      <CreateCampaignWizard
-        visible={isWizardVisible}
-        onCancel={() => setIsWizardVisible(false)}
-      />
     </div>
   );
 };
