@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Steps, Button, message, Form } from 'antd';
 import Step1_BasicInfo from './campaign_steps/Step1_BasicInfo';
 import Step2_Template from './campaign_steps/Step2_Template';
-import Step3_Contacts from './campaign_steps/Step3_Contacts';
+import Step3_Audience from './campaign_steps/Step3_Audience';
 import Step4_Review from './campaign_steps/Step4_Review';
 import api from '../services/api';
 
@@ -20,7 +20,7 @@ const CreateCampaignWizard: React.FC<CreateCampaignWizardProps> = ({ visible, on
   const steps = [
     { title: 'Basic Info', content: <Step1_BasicInfo form={form} /> },
     { title: 'Template', content: <Step2_Template form={form} /> },
-    { title: 'Contacts', content: <Step3_Contacts /> }, // Placeholder
+    { title: 'Audience', content: <Step3_Audience form={form} /> },
     { title: 'Review', content: <Step4_Review campaignData={campaignData} /> },
   ];
 
@@ -41,17 +41,42 @@ const CreateCampaignWizard: React.FC<CreateCampaignWizardProps> = ({ visible, on
   };
 
   const handleDone = async () => {
-    const finalData = {
-      ...campaignData,
-      date_debut: campaignData.date_range[0].toISOString(),
-      date_fin: campaignData.date_range[1].toISOString(),
-    };
-    delete finalData.date_range;
-
     try {
-      await api.post('/campaigns/', finalData);
+      const values = await form.validateFields();
+      const allData = { ...campaignData, ...values };
+
+      // 1. Create the mailing list
+      const mailingListData = {
+        nom_liste: allData.nom_liste,
+        contact_ids: allData.contact_ids || [],
+      };
+      const mailingListResponse = await api.post('/mailing-lists/', mailingListData);
+      const mailingListId = mailingListResponse.data.id_liste;
+
+      // 2. Create the campaign as a draft
+      const campaignDraftPayload = {
+        nom_campagne: allData.nom_campagne,
+        date_debut: allData.date_range[0].toISOString(),
+        date_fin: allData.date_range[1].toISOString(),
+        id_modele: allData.id_modele,
+        type_campagne: allData.type_campagne,
+        statut: 'draft',
+      };
+      const campaignResponse = await api.post('/campaigns/', campaignDraftPayload);
+      const campaignId = campaignResponse.data.id_campagne;
+
+      // 3. Update the mailing list with the campaign ID
+      await api.put(`/mailing-lists/${mailingListId}`, { id_campagne: campaignId });
+
+      // 4. Update the campaign to scheduled
+      const campaignUpdatePayload = {
+        ...campaignDraftPayload,
+        statut: 'scheduled',
+      };
+      await api.put(`/campaigns/${campaignId}`, campaignUpdatePayload);
+
       message.success('Campaign created successfully!');
-      onSuccess(); // Close modal and refresh table
+      onSuccess();
     } catch (error) {
       console.error('Failed to create campaign:', error);
       message.error('Failed to create campaign.');
