@@ -25,10 +25,30 @@ const CreateCampaignWizard: React.FC<CreateCampaignWizardProps> = ({ visible, on
 
   const next = async () => {
     try {
-      await form.validateFields();
+      let fieldsToValidate = [];
+      switch (current) {
+        case 0:
+          fieldsToValidate = ['nom_campagne', 'date_range', 'type_campagne', 'statut'];
+          break;
+        case 1:
+          const id_modele = form.getFieldValue('id_modele');
+          if (!id_modele) {
+            fieldsToValidate = ['contenu_modele'];
+          }
+          break;
+        case 2:
+          fieldsToValidate = ['nom_liste', 'contact_ids'];
+          break;
+        default:
+          break;
+      }
+      if (fieldsToValidate.length > 0) {
+        await form.validateFields(fieldsToValidate);
+      }
       setCurrent(current + 1);
     } catch (info) {
       console.log('Validate Failed:', info);
+      message.error('Please fill out all required fields before proceeding.');
     }
   };
 
