@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Space, Typography, message } from 'antd';
+import { Table, Button, Space, Typography, message, Popconfirm } from 'antd';
 import type { TableProps } from 'antd';
 import api from '../services/api';
-import CampaignForm from '../components/CampaignForm';
+import CreateCampaignWizard from '../components/CreateCampaignWizard';
 
 const { Title } = Typography;
 
@@ -18,8 +18,7 @@ export interface Campaign {
 const CampaignsPage = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingCampaign, setEditingCampaign] = useState<Partial<Campaign> | null>(null);
+  const [isWizardVisible, setIsWizardVisible] = useState(false);
 
   const fetchCampaigns = async () => {
     try {
@@ -38,16 +37,6 @@ const CampaignsPage = () => {
     fetchCampaigns();
   }, []);
 
-  const handleCreate = () => {
-    setEditingCampaign(null);
-    setIsModalVisible(true);
-  };
-
-  const handleEdit = (record: Campaign) => {
-    setEditingCampaign(record);
-    setIsModalVisible(true);
-  };
-
   const handleDelete = async (id: number) => {
     try {
         await api.delete(`/campaigns/${id}`);
@@ -56,27 +45,6 @@ const CampaignsPage = () => {
     } catch (error) {
         console.error('Failed to delete campaign:', error);
         message.error('Failed to delete campaign');
-    }
-  };
-
-  const handleModalCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  const handleModalFinish = async (values: any) => {
-    try {
-      if (editingCampaign && 'id_campagne' in editingCampaign) {
-        await api.put(`/campaigns/${editingCampaign.id_campagne}`, values);
-        message.success('Campaign updated successfully');
-      } else {
-        await api.post('/campaigns/', values);
-        message.success('Campaign created successfully');
-      }
-      setIsModalVisible(false);
-      fetchCampaigns(); // Refresh the table
-    } catch (error) {
-      console.error('Failed to save campaign:', error);
-      message.error('Failed to save campaign');
     }
   };
 
@@ -91,8 +59,10 @@ const CampaignsPage = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <a onClick={() => handleEdit(record)}>Edit</a>
-          <a onClick={() => handleDelete(record.id_campagne)}>Delete</a>
+          <a>Edit</a>
+          <Popconfirm title="Delete this campaign?" onConfirm={() => handleDelete(record.id_campagne)}>
+            <a>Delete</a>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -102,16 +72,14 @@ const CampaignsPage = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Title level={2}>Campaigns</Title>
-        <Button type="primary" onClick={handleCreate}>
+        <Button type="primary" onClick={() => setIsWizardVisible(true)}>
           Create Campaign
         </Button>
       </div>
       <Table columns={columns} dataSource={campaigns} rowKey="id_campagne" loading={loading} />
-      <CampaignForm
-        visible={isModalVisible}
-        onCancel={handleModalCancel}
-        onFinish={handleModalFinish}
-        initialValues={editingCampaign}
+      <CreateCampaignWizard
+        visible={isWizardVisible}
+        onCancel={() => setIsWizardVisible(false)}
       />
     </div>
   );
