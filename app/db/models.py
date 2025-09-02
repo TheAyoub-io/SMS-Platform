@@ -132,6 +132,25 @@ class CampaignReport(Base):
 
     campaign = relationship("Campaign", back_populates="report")
 
+
+class SMSQueue(Base):
+    __tablename__ = 'sms_queue'
+
+    id = Column(Integer, primary_key=True)
+    campaign_id = Column(Integer, ForeignKey('campagnes.id_campagne'), nullable=False)
+    contact_id = Column(Integer, ForeignKey('contacts.id_contact'), nullable=False)
+    message_content = Column(TEXT, nullable=False)
+    scheduled_at = Column(TIMESTAMP, nullable=False)
+    status = Column(String(20), CheckConstraint("status IN ('pending', 'processing', 'sent', 'failed')"), default='pending')
+    attempts = Column(Integer, default=0)
+    error_message = Column(TEXT)
+    created_at = Column(TIMESTAMP, default=func.now())
+    processed_at = Column(TIMESTAMP)
+
+    campaign = relationship("Campaign")
+    contact = relationship("Contact")
+
+
 class ActivityLog(Base):
     __tablename__ = 'activity_logs'
     id_log = Column(Integer, primary_key=True)

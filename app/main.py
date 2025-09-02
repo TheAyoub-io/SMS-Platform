@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import auth, campaigns, contacts, templates, messages, reports, users
+from app.api.v1.endpoints import auth, campaigns, contacts, templates, messages, reports, users, sms_webhooks
 
 app = FastAPI()
 
@@ -20,6 +20,7 @@ app.include_router(contacts.router, prefix="/contacts", tags=["contacts"])
 app.include_router(templates.router, prefix="/templates", tags=["templates"])
 app.include_router(messages.router, prefix="/messages", tags=["messages"])
 app.include_router(reports.router, prefix="/reports", tags=["reports"])
+app.include_router(sms_webhooks.router, prefix="/api/v1/sms-webhooks", tags=["sms-webhooks"])
 
 @app.get("/")
 def read_root():
