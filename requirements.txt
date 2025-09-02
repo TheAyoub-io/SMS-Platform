@@ -11,5 +11,8 @@ email-validator
 pandas
 twilio
 python-multipart
+celery[redis]
+phonenumbers
 pytest
+pytest-env
 httpx
