@@ -1,5 +1,5 @@
 from typing import List
-
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,8 @@ from app.services import campaign_service
 from app.db.session import get_db
 from app.db.models import Agent
 from app.core.security import get_current_user
+from app.services.campaign_execution_service import CampaignExecutionService
+
 
 router = APIRouter()
 
@@ -21,6 +23,8 @@ def create_campaign(
     Create new campaign.
     """
     return campaign_service.create_campaign(db=db, campaign=campaign, agent_id=current_user.id_agent)
+
+
 
 
 @router.get("/", response_model=List[campaign_schema.Campaign])
@@ -83,3 +87,18 @@ def delete_campaign(
         raise HTTPException(status_code=404, detail="Campaign not found")
     # Add authorization logic here if needed
     return campaign_service.delete_campaign(db=db, campaign_id=campaign_id)
+
+@router.post("/{campaign_id}/launch", response_model=dict)
+def launch_campaign(
+    campaign_id: int,
+    db: Session = Depends(get_db),
+    current_user: Agent = Depends(get_current_user),
+):
+    """
+    Launch a campaign.
+    """
+    execution_service = CampaignExecutionService(db=db)
+    result = execution_service.launch_campaign(campaign_id=campaign_id)
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result["message"])
+    return result

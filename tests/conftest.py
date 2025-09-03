@@ -1,8 +1,19 @@
+import os
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
+
+# Set environment variables for testing BEFORE loading the app
+os.environ['DATABASE_URL'] = "sqlite:///:memory:"
+os.environ['JWT_SECRET_KEY'] = "testsecret"
+os.environ['TWILIO_ACCOUNT_SID'] = "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+os.environ['TWILIO_AUTH_TOKEN'] = "testtoken"
+os.environ['TWILIO_PHONE_NUMBER'] = "+15005550006"
+os.environ['BASE_URL'] = "http://testserver"
+os.environ['CELERY_BROKER_URL'] = "redis://localhost:6379/0"
+os.environ['CELERY_RESULT_BACKEND'] = "redis://localhost:6379/0"
 
 from app.main import app
 from app.db.base import Base
@@ -10,11 +21,8 @@ from app.db.session import get_db
 from app.services import user_service
 from app.api.v1.schemas import user as user_schema
 
-# The test DB URL is now set via pytest.ini, but we define it here for the engine
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
+    os.environ['DATABASE_URL'],
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
