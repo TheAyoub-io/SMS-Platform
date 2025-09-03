@@ -22,3 +22,6 @@ class DashboardStats(BaseModel):
     total_contacts: int
     total_sms_sent: int
     total_cost: float
+    overall_delivery_rate: float
+    total_messages_delivered: int
+    total_messages_failed: int

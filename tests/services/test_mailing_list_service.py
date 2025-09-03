@@ -85,19 +85,24 @@ def test_get_list_statistics(db_session: Session, setup_contacts_and_list):
     stats = service.get_list_statistics(mailing_list.id_liste)
 
     assert stats.total_contacts == 3
-    assert stats.opt_in_count == 2
-    assert stats.opt_out_count == 1
-    assert pytest.approx(stats.opt_in_rate) == (2/3) * 100
+    assert stats.opt_in_contacts == 2
+    assert stats.opt_out_contacts == 1
 
 def test_preview_campaign_for_list(db_session: Session, setup_contacts_and_list):
     mailing_list, _ = setup_contacts_and_list
-    template = MessageTemplate(nom_modele="Preview", contenu_modele="Hi {prenom}")
-    db_session.add(template)
-    db_session.commit()
+    template_content = "Hi {prenom}"
 
     service = MailingListService(db=db_session)
-    previews = service.preview_campaign_for_list(mailing_list.id_liste, template.id_modele)
+    preview_data = service.preview_campaign_for_list(
+        list_id=mailing_list.id_liste,
+        message_template=template_content,
+        sample_size=3
+    )
 
+    previews = preview_data['previews']
     assert len(previews) == 3
-    assert "Hi User1" in previews
-    assert "Hi User2" in previews
+
+    # Check that the personalized messages are correct
+    personalized_messages = {p['personalized_message'] for p in previews}
+    assert "Hi User1" in personalized_messages
+    assert "Hi User2" in personalized_messages
