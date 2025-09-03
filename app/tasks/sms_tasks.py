@@ -1,16 +1,42 @@
 import logging
 from datetime import datetime
-from sqlalchemy.orm import Session
 from app.core.celery_app import celery_app
-from app.db.models import Campaign, Contact, SMSQueue, Message, MessageTemplate
+from app.db.models import SMSQueue, Message, Campaign
 from app.db.session import SessionLocal
+from app.services.campaign_execution_service import CampaignExecutionService
 from app.services.sms_providers.twilio_provider import TwilioProvider, TwilioApiError
-from app.utils.phone_validator import validate_and_format_phone_number, InvalidPhoneNumberError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 MAX_SEND_ATTEMPTS = 3
+
+@celery_app.task
+def send_scheduled_campaigns():
+    """
+    Checks for campaigns that are scheduled to be sent and launches them.
+    """
+    db = SessionLocal()
+    campaign_execution_service = CampaignExecutionService(db)
+    try:
+        scheduled_campaigns = db.query(Campaign).filter(
+            Campaign.statut == 'scheduled',
+            Campaign.date_debut <= datetime.utcnow()
+        ).all()
+
+        if not scheduled_campaigns:
+            logger.info("No scheduled campaigns to launch.")
+            return
+
+        logger.info(f"Found {len(scheduled_campaigns)} scheduled campaigns to launch.")
+        for campaign in scheduled_campaigns:
+            try:
+                logger.info(f"Auto-launching scheduled campaign {campaign.id_campagne}.")
+                campaign_execution_service.launch_campaign(campaign.id_campagne)
+            except Exception as e:
+                logger.error(f"Failed to auto-launch campaign {campaign.id_campagne}: {e}")
+    finally:
+        db.close()
 
 @celery_app.task
 def process_sms_queue():
@@ -26,7 +52,8 @@ def process_sms_queue():
         pending_items = pending_items_query.all()
 
         if not pending_items:
-            logger.info("No pending SMS messages to process.")
+            # This is a normal state, so use info level, not warning
+            # logger.info("No pending SMS messages to process.")
             return
 
         item_ids = [item.id for item in pending_items]
@@ -88,70 +115,3 @@ def process_sms_queue():
 
     finally:
         db.close()
-
-
-class SmsService:
-    def __init__(self, db: Session):
-        self.db = db
-
-    def _personalize_message(self, template_content: str, contact: Contact) -> str:
-        """Replaces placeholders in a message template with contact data."""
-        # A simple format replacement. Can be extended for more complex variables.
-        return template_content.format(
-            prenom=contact.prenom,
-            nom=contact.nom,
-            email=contact.email or ''
-        )
-
-    def queue_campaign_messages(self, campaign_id: int) -> dict:
-        """
-        Generates personalized messages for a campaign and queues them in the sms_queue table.
-        """
-        campaign = self.db.query(Campaign).filter(Campaign.id_campagne == campaign_id).first()
-        if not campaign:
-            logger.error(f"Campaign with ID {campaign_id} not found.")
-            return {"error": "Campaign not found", "queued_count": 0}
-
-        if not campaign.template:
-            logger.error(f"Campaign {campaign.id_campagne} has no message template.")
-            return {"error": "Campaign has no template", "queued_count": 0}
-
-        message_template = campaign.template.contenu_modele
-        queued_count = 0
-        total_contacts = 0
-
-        for mailing_list in campaign.mailing_lists:
-            total_contacts += len(mailing_list.contacts)
-            for contact in mailing_list.contacts:
-                if not contact.statut_opt_in:
-                    logger.info(f"Skipping contact {contact.id_contact} because they have opted out.")
-                    continue
-
-                try:
-                    # 1. Validate phone number
-                    valid_phone_number = validate_and_format_phone_number(contact.numero_telephone)
-
-                    # 2. Personalize message
-                    personalized_content = self._personalize_message(message_template, contact)
-
-                    # 3. Create SMSQueue record
-                    new_queue_item = SMSQueue(
-                        campaign_id=campaign.id_campagne,
-                        contact_id=contact.id_contact,
-                        message_content=personalized_content,
-                        scheduled_at=datetime.utcnow(),
-                        status='pending'
-                    )
-                    self.db.add(new_queue_item)
-                    queued_count += 1
-
-                except InvalidPhoneNumberError as e:
-                    logger.warning(f"Skipping contact {contact.id_contact} for campaign {campaign.id_campagne}: {e}")
-                except Exception as e:
-                    logger.error(f"Failed to queue message for contact {contact.id_contact} in campaign {campaign.id_campagne}: {e}")
-
-        if queued_count > 0:
-            self.db.commit()
-            logger.info(f"Successfully queued {queued_count} messages for campaign {campaign.id_campagne}.")
-
-        return {"total_contacts": total_contacts, "queued_count": queued_count}

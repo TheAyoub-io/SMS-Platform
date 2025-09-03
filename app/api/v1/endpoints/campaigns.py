@@ -1,6 +1,5 @@
 from typing import List
-from app.services.sms_service import SmsService
-
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -9,7 +8,7 @@ from app.services import campaign_service
 from app.db.session import get_db
 from app.db.models import Agent
 from app.core.security import get_current_user
-from app.services.sms_service import SmsService
+from app.services.campaign_execution_service import CampaignExecutionService
 
 
 router = APIRouter()
@@ -89,10 +88,6 @@ def delete_campaign(
     # Add authorization logic here if needed
     return campaign_service.delete_campaign(db=db, campaign_id=campaign_id)
 
-@router.get("/test-route")
-def test_route():
-    return {"status": "ok"}
-
 @router.post("/{campaign_id}/launch", response_model=dict)
 def launch_campaign(
     campaign_id: int,
@@ -102,8 +97,8 @@ def launch_campaign(
     """
     Launch a campaign.
     """
-    sms_service = SmsService(db=db)
-    result = sms_service.launch_campaign(campaign_id=campaign_id)
+    execution_service = CampaignExecutionService(db=db)
+    result = execution_service.launch_campaign(campaign_id=campaign_id)
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
     return result

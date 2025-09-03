@@ -1,55 +1,37 @@
 from unittest.mock import patch, MagicMock
-import pytest
 from sqlalchemy.orm import Session
-from app.services.sms_service import SmsService, process_sms_queue
-from app.db.models import Campaign, Contact, MailingList, MessageTemplate, SMSQueue, Message
-from datetime import datetime
+from app.tasks.sms_tasks import process_sms_queue, send_scheduled_campaigns
+from app.db.models import Campaign, Contact, MailingList, SMSQueue, Message
+from datetime import datetime, timedelta
 
-@pytest.fixture
-def mock_campaign_for_queuing(db_session: Session):
-    """Creates a mock campaign with template, list, and contacts for testing the queuing service."""
-    template = MessageTemplate(nom_modele="Test Queue Template", contenu_modele="Bonjour {prenom}!")
-    contact1 = Contact(nom="Valid", prenom="Contact", numero_telephone="+33611223344", email="valid@example.com", statut_opt_in=True)
-    contact2 = Contact(nom="InvalidNum", prenom="Contact", numero_telephone="12345", email="invalid@example.com", statut_opt_in=True)
-    contact3 = Contact(nom="OptOut", prenom="Contact", numero_telephone="+33655443322", email="optout@example.com", statut_opt_in=False)
-
-    mailing_list = MailingList(nom_liste="Test Queue List", contacts=[contact1, contact2, contact3])
-    campaign = Campaign(
-        nom_campagne="Test Queuing Campaign",
-        template=template,
-        mailing_lists=[mailing_list],
-        date_debut=datetime(2025, 1, 1),
-        date_fin=datetime(2025, 1, 31),
-        statut="active",
-        type_campagne="promotional",
-        id_agent=1
-    )
-
-    db_session.add_all([template, contact1, contact2, contact3, mailing_list, campaign])
-    db_session.commit()
-    return campaign
-
-def test_queue_campaign_messages(db_session: Session, mock_campaign_for_queuing: Campaign):
+@patch("app.tasks.sms_tasks.CampaignExecutionService")
+@patch("app.tasks.sms_tasks.SessionLocal")
+def test_send_scheduled_campaigns(MockSessionLocal, MockExecutionService, db_session: Session):
     # --- Setup ---
-    sms_service = SmsService(db=db_session)
+    MockSessionLocal.return_value = db_session
+    mock_service_instance = MockExecutionService.return_value
+
+    # Create a campaign that is scheduled and ready to be launched
+    scheduled_campaign = Campaign(
+        nom_campagne="Scheduled Campaign",
+        statut="scheduled",
+        date_debut=datetime.utcnow() - timedelta(hours=1), # Scheduled for 1 hour ago
+        date_fin=datetime.utcnow() + timedelta(days=1),
+        type_campagne="promotional", id_agent=1
+    )
+    db_session.add(scheduled_campaign)
+    db_session.commit()
 
     # --- Execute ---
-    result = sms_service.queue_campaign_messages(campaign_id=mock_campaign_for_queuing.id_campagne)
+    send_scheduled_campaigns()
 
     # --- Assert ---
-    assert result["queued_count"] == 1
-    assert result["total_contacts"] == 3
-    queue_items = db_session.query(SMSQueue).all()
-    assert len(queue_items) == 1
-    valid_contact = db_session.query(Contact).filter_by(nom="Valid").one()
-    queued_item = queue_items[0]
-    assert queued_item.contact_id == valid_contact.id_contact
-    assert queued_item.status == 'pending'
-    assert "Bonjour Contact!" in queued_item.message_content
+    # Verify that the launch method was called for the scheduled campaign
+    mock_service_instance.launch_campaign.assert_called_once_with(scheduled_campaign.id_campagne)
 
 
-@patch("app.services.sms_service.SessionLocal")
-@patch("app.services.sms_service.TwilioProvider")
+@patch("app.tasks.sms_tasks.SessionLocal")
+@patch("app.tasks.sms_tasks.TwilioProvider")
 def test_process_sms_queue_success(MockTwilioProvider, MockSessionLocal, db_session: Session):
     # --- Setup ---
     MockSessionLocal.return_value = db_session
@@ -83,8 +65,8 @@ def test_process_sms_queue_success(MockTwilioProvider, MockSessionLocal, db_sess
     assert message.statut_livraison == "sent"
 
 
-@patch("app.services.sms_service.SessionLocal")
-@patch("app.services.sms_service.TwilioProvider")
+@patch("app.tasks.sms_tasks.SessionLocal")
+@patch("app.tasks.sms_tasks.TwilioProvider")
 def test_process_sms_queue_failure_and_retry(MockTwilioProvider, MockSessionLocal, db_session: Session):
     # --- Setup ---
     MockSessionLocal.return_value = db_session
