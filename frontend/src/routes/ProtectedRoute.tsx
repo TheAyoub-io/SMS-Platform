@@ -1,15 +1,27 @@
-import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
-const ProtectedRoute: React.FC = () => {
-  const token = localStorage.getItem('access_token');
+interface ProtectedRouteProps {
+  allowedRoles?: string[];
+}
 
-  if (!token) {
-    // If no token, redirect to the login page
+const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    // You can show a loading spinner here
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // If token exists, render the child routes
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    // Redirect to an unauthorized page or dashboard
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return <Outlet />;
 };
 

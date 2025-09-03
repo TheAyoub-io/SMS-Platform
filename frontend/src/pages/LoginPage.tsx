@@ -1,59 +1,29 @@
-import { Button, Form, Input, Card, Typography } from 'antd';
-import api from '../services/api';
-
-const { Title } = Typography;
+import LoginForm from "../components/auth/LoginForm";
 
 const LoginPage = () => {
-  const onFinish = async (values: any) => {
-    try {
-      const response = await api.post('/auth/login', {
-        identifiant: values.username,
-        password: values.password,
-      });
-      const token = response.data.access_token;
-      localStorage.setItem('access_token', token);
-      // TODO: Redirect to dashboard
-      window.location.href = '/dashboard'; // Simple redirect for now
-    } catch (error) {
-      console.error('Failed to login:', error);
-      // TODO: Show error notification
-    }
-  };
-
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <Card style={{ width: 400 }}>
-        <Title level={2} style={{ textAlign: 'center' }}>Login</Title>
-        <Form
-          name="login"
-          initialValues={{ remember: true }}
-          onFinish={onFinish}
-          autoComplete="off"
-          layout="vertical"
-        >
-          <Form.Item
-            label="Username"
-            name="username"
-            rules={[{ required: true, message: 'Please input your username!' }]}
-          >
-            <Input />
-          </Form.Item>
+    <div className="flex min-h-screen flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-gray-100 dark:bg-gray-900">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
+          Sign in to your account
+        </h2>
+      </div>
 
-          <Form.Item
-            label="Password"
-            name="password"
-            rules={[{ required: true, message: 'Please input your password!' }]}
-          >
-            <Input.Password />
-          </Form.Item>
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
+        <div className="bg-white dark:bg-gray-800 px-6 py-12 shadow sm:rounded-lg sm:px-12">
+          <LoginForm />
+        </div>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
-              Log in
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+        <p className="mt-10 text-center text-sm text-gray-500 dark:text-gray-400">
+          Not a member?{" "}
+          <a
+            href="#"
+            className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
+          >
+            Contact support
+          </a>
+        </p>
+      </div>
     </div>
   );
 };
