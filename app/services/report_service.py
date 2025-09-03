@@ -1,7 +1,7 @@
 import io
 import pandas as pd
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, case
 from app.db.models import CampaignReport, Campaign, Contact, Message
 
 def get_campaign_report(db: Session, campaign_id: int):
@@ -10,13 +10,28 @@ def get_campaign_report(db: Session, campaign_id: int):
 def get_dashboard_stats(db: Session):
     total_campaigns = db.query(func.count(Campaign.id_campagne)).scalar()
     total_contacts = db.query(func.count(Contact.id_contact)).scalar()
-    total_sms_sent = db.query(func.sum(CampaignReport.total_sent)).scalar() or 0
-    total_cost = db.query(func.sum(CampaignReport.total_cost)).scalar() or 0
+
+    # Query message stats directly for real-time data
+    message_stats = db.query(
+        func.count(Message.id_message).label("total_sms_sent"),
+        func.sum(Message.cost).label("total_cost"),
+        func.sum(case((Message.statut_livraison == 'delivered', 1), else_=0)).label("delivered_count"),
+        func.sum(case((Message.statut_livraison == 'failed', 1), else_=0)).label("failed_count")
+    ).one()
+
+    total_sms_sent = message_stats.total_sms_sent or 0
+    total_cost = message_stats.total_cost or 0
+    delivered_count = message_stats.delivered_count or 0
+    failed_count = message_stats.failed_count or 0
+
     return {
         "total_campaigns": total_campaigns,
         "total_contacts": total_contacts,
         "total_sms_sent": total_sms_sent,
-        "total_cost": total_cost,
+        "total_cost": float(total_cost), # Ensure correct type
+        "overall_delivery_rate": (delivered_count / total_sms_sent) * 100 if total_sms_sent > 0 else 0,
+        "total_messages_delivered": delivered_count,
+        "total_messages_failed": failed_count,
     }
 
 def export_campaign_report(db: Session, campaign_id: int, format: str):
