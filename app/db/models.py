@@ -100,6 +100,7 @@ class MailingList(Base):
     description = Column(TEXT)
     id_campagne = Column(Integer, ForeignKey('campagnes.id_campagne'), nullable=False)
     created_at = Column(TIMESTAMP, default=func.now())
+    deleted_at = Column(TIMESTAMP, nullable=True)
 
     campaign = relationship("Campaign", back_populates="mailing_lists")
     contacts = relationship("Contact", secondary=liste_contacts, back_populates="mailing_lists")
