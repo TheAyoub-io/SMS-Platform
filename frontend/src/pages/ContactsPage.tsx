@@ -1,36 +1,31 @@
-import { useEffect, useState } from 'react';
-import { Table, Button, Space, Typography, message, Popconfirm } from 'antd';
-import type { TableProps } from 'antd';
-import api from '../services/api';
-import ContactForm from '../components/ContactForm';
-import ImportModal from '../components/ImportModal';
-
-const { Title } = Typography;
+import { useEffect, useState } from "react";
+import { apiService } from "../services/api";
+import Table from "../components/common/Table";
+import Modal from "../components/common/Modal";
+import ContactForm from "../components/ContactForm";
+import { toast } from "react-hot-toast";
 
 export interface Contact {
-  id_contact: number;
-  nom: string;
-  prenom: string;
-  numero_telephone: string;
+  id: number;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
   email: string;
-  segment: string;
 }
 
 const ContactsPage = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingContact, setEditingContact] = useState<Partial<Contact> | null>(null);
-  const [isImportModalVisible, setIsImportModalVisible] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
 
   const fetchContacts = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/contacts');
-      setContacts(response.data);
+      const { data } = await apiService.get<Contact[]>("/contacts");
+      setContacts(data);
     } catch (error) {
-      console.error('Failed to fetch contacts:', error);
-      message.error('Failed to fetch contacts');
+      toast.error("Failed to fetch contacts");
     } finally {
       setLoading(false);
     }
@@ -42,98 +37,96 @@ const ContactsPage = () => {
 
   const handleCreate = () => {
     setEditingContact(null);
-    setIsModalVisible(true);
+    setIsModalOpen(true);
   };
 
-  const handleEdit = (record: Contact) => {
-    setEditingContact(record);
-    setIsModalVisible(true);
+  const handleEdit = (contact: Contact) => {
+    setEditingContact(contact);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id: number) => {
-    try {
-        await api.delete(`/contacts/${id}`);
-        message.success('Contact deleted successfully');
-        fetchContacts(); // Refresh the table
-    } catch (error) {
-        console.error('Failed to delete contact:', error);
-        message.error('Failed to delete contact');
-    }
-  };
-
-  const handleModalCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  const handleModalFinish = async (values: any) => {
-    try {
-      if (editingContact && 'id_contact' in editingContact) {
-        await api.put(`/contacts/${editingContact.id_contact}`, values);
-        message.success('Contact updated successfully');
-      } else {
-        await api.post('/contacts/', values);
-        message.success('Contact created successfully');
+    if (window.confirm("Are you sure you want to delete this contact?")) {
+      try {
+        await apiService.delete(`/contacts/${id}`);
+        toast.success("Contact deleted successfully");
+        fetchContacts();
+      } catch (error) {
+        toast.error("Failed to delete contact");
       }
-      setIsModalVisible(false);
-      fetchContacts(); // Refresh the table
-    } catch (error) {
-      console.error('Failed to save contact:', error);
-      message.error('Failed to save contact');
     }
   };
 
-  const handleImportSuccess = () => {
-    setIsImportModalVisible(false);
-    fetchContacts();
+  const handleFormSubmit = async (data: any) => {
+    try {
+      if (editingContact) {
+        await apiService.put(`/contacts/${editingContact.id}`, data);
+        toast.success("Contact updated successfully");
+      } else {
+        await apiService.post("/contacts", data);
+        toast.success("Contact created successfully");
+      }
+      setIsModalOpen(false);
+      fetchContacts();
+    } catch (error) {
+      toast.error("Failed to save contact");
+    }
   };
 
-  const columns: TableProps<Contact>['columns'] = [
-    { title: 'First Name', dataIndex: 'prenom', key: 'prenom' },
-    { title: 'Last Name', dataIndex: 'nom', key: 'nom' },
-    { title: 'Phone Number', dataIndex: 'numero_telephone', key: 'numero_telephone' },
-    { title: 'Email', dataIndex: 'email', key: 'email' },
-    { title: 'Segment', dataIndex: 'segment', key: 'segment' },
-    {
-      title: 'Action',
-      key: 'action',
-      render: (_, record) => (
-        <Space size="middle">
-          <a onClick={() => handleEdit(record)}>Edit</a>
-          <Popconfirm
-            title="Delete the contact"
-            description="Are you sure to delete this contact?"
-            onConfirm={() => handleDelete(record.id_contact)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <a>Delete</a>
-          </Popconfirm>
-        </Space>
-      ),
-    },
+  const columns = [
+    { header: "First Name", accessor: "first_name" as const },
+    { header: "Last Name", accessor: "last_name" as const },
+    { header: "Phone Number", accessor: "phone_number" as const },
+    { header: "Email", accessor: "email" as const },
   ];
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Title level={2}>Contacts</Title>
-        <Space>
-          <Button type="primary" onClick={handleCreate}>Create Contact</Button>
-          <Button onClick={() => setIsImportModalVisible(true)}>Import Contacts</Button>
-        </Space>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Contacts</h1>
+        <button
+          onClick={handleCreate}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+        >
+          Create Contact
+        </button>
       </div>
-      <Table columns={columns} dataSource={contacts} rowKey="id_contact" loading={loading} />
-      <ContactForm
-        visible={isModalVisible}
-        onCancel={handleModalCancel}
-        onFinish={handleModalFinish}
-        initialValues={editingContact}
-      />
-      <ImportModal
-        visible={isImportModalVisible}
-        onCancel={() => setIsImportModalVisible(false)}
-        onSuccess={handleImportSuccess}
-      />
+
+      {loading ? (
+        <p>Loading contacts...</p>
+      ) : (
+        <Table<Contact>
+          columns={columns}
+          data={contacts}
+          renderActions={(contact) => (
+            <div className="space-x-2">
+              <button
+                onClick={() => handleEdit(contact)}
+                className="text-indigo-600 hover:text-indigo-900"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(contact.id)}
+                className="text-red-600 hover:text-red-900"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        />
+      )}
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingContact ? "Edit Contact" : "Create Contact"}
+      >
+        <ContactForm
+          onSubmit={handleFormSubmit}
+          initialValues={editingContact || {}}
+        />
+      </Modal>
     </div>
   );
 };

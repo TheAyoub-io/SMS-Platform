@@ -1,71 +1,100 @@
-import React, { useEffect } from 'react';
-import { Form, Input, Button, Modal, Select, Checkbox } from 'antd';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Contact } from "../pages/ContactsPage";
 
-// This type would ideally be in a shared types file
-interface Contact {
-  id_contact: number;
-  nom: string;
-  prenom: string;
-  numero_telephone: string;
-  email: string;
-  segment: string;
-}
+const contactSchema = z.object({
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
+  phone_number: z.string().min(1, "Phone number is required"),
+  email: z.string().email("Invalid email address"),
+});
+
+type ContactFormInputs = z.infer<typeof contactSchema>;
 
 interface ContactFormProps {
-  visible: boolean;
-  onCancel: () => void;
-  onFinish: (values: any) => void;
-  initialValues?: Partial<Contact> | null;
+  onSubmit: (data: ContactFormInputs) => void;
+  initialValues?: Partial<Contact>;
 }
 
-const ContactForm: React.FC<ContactFormProps> = ({ visible, onCancel, onFinish, initialValues }) => {
-  const [form] = Form.useForm();
-
-  useEffect(() => {
-    if (visible && initialValues) {
-      form.setFieldsValue(initialValues);
-    } else {
-      form.resetFields();
-    }
-  }, [initialValues, form, visible]);
+const ContactForm = ({ onSubmit, initialValues }: ContactFormProps) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ContactFormInputs>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: initialValues,
+  });
 
   return (
-    <Modal
-      title={initialValues ? 'Edit Contact' : 'Create Contact'}
-      open={visible}
-      onCancel={onCancel}
-      footer={null}
-      destroyOnClose
-    >
-      <Form form={form} layout="vertical" onFinish={onFinish} autoComplete="off" initialValues={{ statut_opt_in: true }}>
-        <Form.Item name="prenom" label="First Name" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item name="nom" label="Last Name" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item name="numero_telephone" label="Phone Number" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item name="segment" label="Segment">
-          <Input />
-        </Form.Item>
-        <Form.Item name="statut_opt_in" valuePropName="checked">
-          <Checkbox>Opt-in to communications</Checkbox>
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" style={{ marginRight: 8 }}>
-            {initialValues ? 'Save' : 'Create'}
-          </Button>
-          <Button onClick={onCancel}>
-            Cancel
-          </Button>
-        </Form.Item>
-      </Form>
-    </Modal>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div>
+        <label htmlFor="first_name" className="block text-sm font-medium">
+          First Name
+        </label>
+        <input
+          id="first_name"
+          {...register("first_name")}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+        {errors.first_name && (
+          <p className="mt-1 text-sm text-red-600">
+            {errors.first_name.message}
+          </p>
+        )}
+      </div>
+      <div>
+        <label htmlFor="last_name" className="block text-sm font-medium">
+          Last Name
+        </label>
+        <input
+          id="last_name"
+          {...register("last_name")}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+        {errors.last_name && (
+          <p className="mt-1 text-sm text-red-600">
+            {errors.last_name.message}
+          </p>
+        )}
+      </div>
+      <div>
+        <label htmlFor="phone_number" className="block text-sm font-medium">
+          Phone Number
+        </label>
+        <input
+          id="phone_number"
+          {...register("phone_number")}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+        {errors.phone_number && (
+          <p className="mt-1 text-sm text-red-600">
+            {errors.phone_number.message}
+          </p>
+        )}
+      </div>
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium">
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          {...register("email")}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+        {errors.email && (
+          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+        )}
+      </div>
+      <button
+        type="submit"
+        className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+      >
+        Submit
+      </button>
+    </form>
   );
 };
 
