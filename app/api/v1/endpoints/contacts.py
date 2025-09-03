@@ -27,13 +27,24 @@ def create_contact(
 def read_contacts(
     skip: int = 0,
     limit: int = 100,
+    segment: str = None,
+    zone_geographique: str = None,
+    statut_opt_in: bool = None,
     db: Session = Depends(get_db),
     current_user: Agent = Depends(get_current_user),
 ):
     """
-    Retrieve contacts.
+    Retrieve contacts with optional filtering.
     """
-    contacts = contact_service.get_contacts(db, skip=skip, limit=limit)
+    filters = {
+        "segment": segment,
+        "zone_geographique": zone_geographique,
+        "statut_opt_in": statut_opt_in,
+    }
+    # Remove None values so we don't filter by them
+    active_filters = {k: v for k, v in filters.items() if v is not None}
+
+    contacts = contact_service.get_contacts(db, filters=active_filters, skip=skip, limit=limit)
     return contacts
 
 

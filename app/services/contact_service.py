@@ -19,8 +19,18 @@ def create_contact(db: Session, contact: ContactCreate):
 def get_contact(db: Session, contact_id: int):
     return db.query(Contact).filter(Contact.id_contact == contact_id).first()
 
-def get_contacts(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Contact).offset(skip).limit(limit).all()
+def get_contacts(db: Session, filters: dict, skip: int = 0, limit: int = 100):
+    query = db.query(Contact)
+
+    # Apply filters dynamically
+    if "segment" in filters:
+        query = query.filter(Contact.segment == filters["segment"])
+    if "zone_geographique" in filters:
+        query = query.filter(Contact.zone_geographique == filters["zone_geographique"])
+    if "statut_opt_in" in filters:
+        query = query.filter(Contact.statut_opt_in == filters["statut_opt_in"])
+
+    return query.offset(skip).limit(limit).all()
 
 def update_contact(db: Session, contact_id: int, contact: ContactUpdate):
     db_contact = get_contact(db, contact_id)
@@ -92,6 +102,39 @@ def import_contacts_from_file(db: Session, file: UploadFile):
     except Exception as e:
         db.rollback()
         return {"error": f"An unexpected error occurred: {str(e)}"}
+
+from sqlalchemy import or_
+from app.api.v1.schemas.mailing_list import ContactFilter
+
+def search_contacts_by_query(db: Session, query: str, skip: int = 0, limit: int = 100):
+    """
+    Searches for contacts by a query string across multiple fields.
+    """
+    search_query = f"%{query}%"
+    return db.query(Contact).filter(
+        or_(
+            Contact.nom.ilike(search_query),
+            Contact.prenom.ilike(search_query),
+            Contact.email.ilike(search_query),
+            Contact.numero_telephone.ilike(search_query)
+        )
+    ).offset(skip).limit(limit).all()
+
+def filter_contacts_by_criteria(db: Session, filters: ContactFilter, skip: int = 0, limit: int = 100):
+    """
+    Filters contacts based on a set of criteria.
+    """
+    query = db.query(Contact)
+    if filters.segment:
+        query = query.filter(Contact.segment == filters.segment)
+    if filters.zone_geographique:
+        query = query.filter(Contact.zone_geographique == filters.zone_geographique)
+    if filters.type_client:
+        query = query.filter(Contact.type_client == filters.type_client)
+    if filters.statut_opt_in is not None:
+        query = query.filter(Contact.statut_opt_in == filters.statut_opt_in)
+
+    return query.offset(skip).limit(limit).all()
 
 def get_contact_segments(db: Session):
     return db.query(distinct(Contact.segment)).all()
