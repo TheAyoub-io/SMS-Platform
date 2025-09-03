@@ -16,3 +16,4 @@ phonenumbers
 pytest
 pytest-env
 httpx
+reportlab
