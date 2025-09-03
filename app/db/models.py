@@ -68,6 +68,14 @@ class Campaign(Base):
     messages = relationship("Message", back_populates="campaign")
     report = relationship("CampaignReport", back_populates="campaign", uselist=False)
 
+    def can_be_launched(self) -> bool:
+        """Checks if the campaign has the minimum requirements to be launched."""
+        if not self.mailing_lists:
+            return False
+        if not self.template:
+            return False
+        return True
+
 class Contact(Base):
     __tablename__ = 'contacts'
     id_contact = Column(Integer, primary_key=True)

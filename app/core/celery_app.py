@@ -10,12 +10,22 @@ celery_app = Celery(
 
 # Load task modules from all registered Django app configs.
 # For FastAPI, we explicitly include the modules that contain our tasks.
-celery_app.autodiscover_tasks(['app.services'])
+celery_app.autodiscover_tasks(['app.tasks'])
 
 # Optional configuration
 celery_app.conf.update(
     task_track_started=True,
     broker_connection_retry_on_startup=True,
+    beat_schedule={
+        'process-sms-queue-every-minute': {
+            'task': 'app.tasks.sms_tasks.process_sms_queue',
+            'schedule': 60.0,
+        },
+        'send-scheduled-campaigns-every-minute': {
+            'task': 'app.tasks.sms_tasks.send_scheduled_campaigns',
+            'schedule': 60.0,
+        },
+    },
 )
 
 if __name__ == '__main__':
