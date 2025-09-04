@@ -34,7 +34,7 @@ const LoginForm = () => {
       const response = await apiService.post<{ access_token: string }>(
         "/auth/login",
         {
-          username: data.email,
+          identifiant: data.username,
           password: data.password,
         }
       );
