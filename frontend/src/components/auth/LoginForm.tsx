@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
+  username: z.string().min(1, { message: "Username is required" }),
   password: z.string().min(1, { message: "Password is required" }),
   rememberMe: z.boolean().optional(),
 });
@@ -51,22 +51,22 @@ const LoginForm = () => {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
         <label
-          htmlFor="email"
+          htmlFor="username"
           className="block text-sm font-medium leading-6 text-gray-900"
         >
-          Email address
+          Username
         </label>
         <div className="mt-2">
           <input
-            id="email"
-            type="email"
-            autoComplete="email"
+            id="username"
+            type="text"
+            autoComplete="username"
             required
-            {...register("email")}
+            {...register("username")}
             className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
           />
-          {errors.email && (
-            <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
+          {errors.username && (
+            <p className="mt-2 text-sm text-red-600">{errors.username.message}</p>
           )}
         </div>
       </div>
