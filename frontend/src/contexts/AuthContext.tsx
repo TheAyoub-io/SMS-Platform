@@ -9,9 +9,9 @@ import { setToken, getToken, removeToken, apiService } from "../services/api";
 import { toast } from "react-hot-toast";
 
 interface User {
-  id: string;
+  id_agent: string;
   email: string;
-  full_name: string;
+  nom_agent: string;
   role: "admin" | "manager" | "agent";
 }
 
@@ -60,10 +60,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, [fetchUser]);
 
-  const login = async (token: string) => {
+  const login = async (token: string, user: User) => {
     setIsLoading(true);
     setToken(token);
-    await fetchUser();
+    setUser(user);
+    setIsAuthenticated(true);
+    setIsLoading(false);
     toast.success("Logged in successfully");
   };
 

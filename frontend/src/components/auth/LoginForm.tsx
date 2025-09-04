@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Button } from "../common/Button";
+import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -31,15 +33,15 @@ const LoginForm = () => {
   const onSubmit = async (data: LoginFormInputs) => {
     setIsLoading(true);
     try {
-      const response = await apiService.post<{ access_token: string }>(
+      const response = await apiService.post<{ access_token: string; user: any }>(
         "/auth/login",
         {
           identifiant: data.username,
           password: data.password,
         }
       );
-      await login(response.data.access_token);
-      navigate("/dashboard");
+      await login(response.data.access_token, response.data.user);
+      navigate("/dashboard"); // Navigate to dashboard
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Failed to login");
     } finally {
@@ -52,18 +54,17 @@ const LoginForm = () => {
       <div>
         <label
           htmlFor="username"
-          className="block text-sm font-medium leading-6 text-gray-900"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
           Username
         </label>
-        <div className="mt-2">
+        <div className="mt-1">
           <input
             id="username"
             type="text"
             autoComplete="username"
-            required
             {...register("username")}
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            className="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           />
           {errors.username && (
             <p className="mt-2 text-sm text-red-600">{errors.username.message}</p>
@@ -73,29 +74,28 @@ const LoginForm = () => {
 
       <div>
         <div className="flex items-center justify-between">
-          <label
+            <label
             htmlFor="password"
-            className="block text-sm font-medium leading-6 text-gray-900"
-          >
-            Password
-          </label>
-          <div className="text-sm">
-            <a
-              href="#"
-              className="font-semibold text-indigo-600 hover:text-indigo-500"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Forgot password?
-            </a>
-          </div>
+            Password
+            </label>
+            <div className="text-sm">
+                <a
+                href="#"
+                className="font-semibold text-indigo-600 hover:text-indigo-500"
+                >
+                Forgot password?
+                </a>
+            </div>
         </div>
-        <div className="mt-2">
+        <div className="mt-1">
           <input
             id="password"
             type="password"
             autoComplete="current-password"
-            required
             {...register("password")}
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            className="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           />
           {errors.password && (
             <p className="mt-2 text-sm text-red-600">
@@ -111,11 +111,11 @@ const LoginForm = () => {
             id="remember-me"
             {...register("rememberMe")}
             type="checkbox"
-            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
           />
           <label
             htmlFor="remember-me"
-            className="ml-3 block text-sm leading-6 text-gray-900"
+            className="block ml-2 text-sm text-gray-900 dark:text-gray-300"
           >
             Remember me
           </label>
@@ -123,13 +123,10 @@ const LoginForm = () => {
       </div>
 
       <div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={isLoading} className="w-full">
+          {isLoading && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
           {isLoading ? "Signing in..." : "Sign in"}
-        </button>
+        </Button>
       </div>
     </form>
   );
