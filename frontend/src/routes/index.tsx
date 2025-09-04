@@ -1,15 +1,13 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import LoginPage from "../pages/LoginPage";
-import MainLayout from "../components/MainLayout";
+import Layout from "../components/layout/Layout";
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardPage from "../pages/DashboardPage";
 import CampaignsPage from "../pages/CampaignsPage";
 import ContactsPage from "../pages/ContactsPage";
 import UsersPage from "../pages/UsersPage";
 import TemplatesPage from "../pages/TemplatesPage";
-
-// Placeholder for other pages
-const SettingsPage = () => <div>Settings Page</div>;
+import SettingsPage from "../pages/SettingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -21,7 +19,7 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        element: <MainLayout />,
+        element: <Layout />,
         children: [
           {
             path: "dashboard",
@@ -41,7 +39,15 @@ export const router = createBrowserRouter([
           },
           {
             path: "users",
-            element: <UsersPage />,
+            element: (
+              <ProtectedRoute allowedRoles={["admin"]} />
+            ),
+            children: [
+              {
+                path: "",
+                element: <UsersPage />,
+              },
+            ],
           },
           {
             path: "settings",
