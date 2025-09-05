@@ -19,9 +19,12 @@
     "date-fns": "^2.29.3",
     "clsx": "^1.2.1",
     "@hookform/resolvers": "^3.3.4",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "lodash": "^4.17.21",
+    "@headlessui/react": "^1.7.17"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.0",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@vitejs/plugin-react": "^3.1.0",
