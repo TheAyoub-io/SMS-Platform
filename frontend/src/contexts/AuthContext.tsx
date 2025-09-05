@@ -2,9 +2,9 @@ import {
   createContext,
   useState,
   useEffect,
-  ReactNode,
   useCallback,
 } from "react";
+import type { ReactNode } from "react";
 import { setToken, getToken, removeToken, apiService } from "../services/api";
 import { toast } from "react-hot-toast";
 
@@ -18,7 +18,7 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
-  login: (token: string) => Promise<void>;
+  login: (token: string, user: User) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
