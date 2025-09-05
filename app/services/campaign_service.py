@@ -30,3 +30,20 @@ def delete_campaign(db: Session, campaign_id: int):
         db.delete(db_campaign)
         db.commit()
     return db_campaign
+
+
+def pause_campaign(db: Session, campaign_id: int):
+    """
+    Pauses an active campaign.
+    """
+    db_campaign = get_campaign(db, campaign_id=campaign_id)
+    if not db_campaign:
+        return {"success": False, "message": "Campaign not found."}
+
+    if db_campaign.statut != 'active':
+        return {"success": False, "message": f"Only active campaigns can be paused. Current status: {db_campaign.statut}."}
+
+    db_campaign.statut = 'paused'
+    db.commit()
+    db.refresh(db_campaign)
+    return {"success": True, "campaign": db_campaign}

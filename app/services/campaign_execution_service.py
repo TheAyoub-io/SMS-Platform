@@ -75,3 +75,32 @@ class CampaignExecutionService:
             self.db.commit()
             logger.warning(f"Campaign {campaign.id_campagne} launched, but no valid contacts found to queue.")
             return {"success": False, "message": "No valid contacts found in campaign mailing lists."}
+
+    def preview_campaign(self, campaign_id: int, limit: int = 5) -> dict:
+        """
+        Generates a preview of personalized messages for a campaign.
+        """
+        campaign = self.db.query(Campaign).filter(Campaign.id_campagne == campaign_id).first()
+        if not campaign or not campaign.template:
+            return {"preview_count": 0, "items": []}
+
+        message_template = campaign.template.contenu_modele
+        preview_items = []
+
+        # Collect contacts from all mailing lists associated with the campaign
+        all_contacts = []
+        for mailing_list in campaign.mailing_lists:
+            all_contacts.extend(mailing_list.contacts)
+
+        # Get a limited number of unique contacts for the preview
+        unique_contacts = list({contact.id_contact: contact for contact in all_contacts}.values())
+
+        for contact in unique_contacts[:limit]:
+            personalized_content = self._personalize_message(message_template, contact)
+            preview_items.append({
+                "contact_name": f"{contact.prenom} {contact.nom}",
+                "phone_number": contact.numero_telephone,
+                "personalized_message": personalized_content
+            })
+
+        return {"preview_count": len(preview_items), "items": preview_items}

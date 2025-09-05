@@ -55,3 +55,20 @@ def export_campaign_report(db: Session, campaign_id: int, format: str):
         df.to_csv(stream, index=False)
         return stream.getvalue()
     return None
+
+
+def get_campaign_status(db: Session, campaign_id: int) -> dict:
+    """
+    Calculates the real-time counts of messages in each status for a given campaign.
+    """
+    status_counts = db.query(
+        func.count(Message.id_message).label("total_messages"),
+        func.sum(case((Message.statut_livraison == 'sent', 1), else_=0)).label("sent"),
+        func.sum(case((Message.statut_livraison == 'delivered', 1), else_=0)).label("delivered"),
+        func.sum(case((Message.statut_livraison == 'failed', 1), else_=0)).label("failed"),
+        func.sum(case((Message.statut_livraison == 'pending', 1), else_=0)).label("pending")
+    ).filter(Message.id_campagne == campaign_id).one()
+
+    # The result of the query is a Row object, which can be converted to a dict
+    # or handled as a named tuple. Pydantic can handle it directly.
+    return status_counts
