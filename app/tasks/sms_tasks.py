@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from app.core.celery_app import celery_app
+from app.core.config import settings
 from app.db.models import SMSQueue, Message, Campaign
 from app.db.session import SessionLocal
 from app.services.campaign_execution_service import CampaignExecutionService
@@ -47,8 +48,21 @@ def process_sms_queue():
     provider = TwilioProvider()
 
     try:
+        # Determine batch size from settings, with a fallback default
+        DEFAULT_BATCH_SIZE = 100
+        batch_size = DEFAULT_BATCH_SIZE
+        if settings.SMS_RATE_LIMIT:
+            try:
+                parsed_limit = int(settings.SMS_RATE_LIMIT)
+                if parsed_limit > 0:
+                    batch_size = parsed_limit
+                else:
+                    logger.warning(f"SMS_RATE_LIMIT must be a positive integer, but got '{settings.SMS_RATE_LIMIT}'. Falling back to default {DEFAULT_BATCH_SIZE}.")
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid SMS_RATE_LIMIT format: '{settings.SMS_RATE_LIMIT}'. Expected an integer. Falling back to default {DEFAULT_BATCH_SIZE}.")
+
         # Atomically fetch and lock pending items for processing
-        pending_items_query = db.query(SMSQueue).filter(SMSQueue.status == 'pending').limit(100)
+        pending_items_query = db.query(SMSQueue).filter(SMSQueue.status == 'pending').limit(batch_size)
         pending_items = pending_items_query.all()
 
         if not pending_items:

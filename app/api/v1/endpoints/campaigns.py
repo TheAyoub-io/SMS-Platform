@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas import campaign as campaign_schema
-from app.services import campaign_service
+from app.services import campaign_service, report_service
 from app.db.session import get_db
 from app.db.models import Agent
 from app.core.security import get_current_user
@@ -102,3 +102,54 @@ def launch_campaign(
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
     return result
+
+
+@router.post("/{campaign_id}/pause", response_model=campaign_schema.Campaign)
+def pause_campaign(
+    campaign_id: int,
+    db: Session = Depends(get_db),
+    current_user: Agent = Depends(get_current_user),
+):
+    """
+    Pause an active campaign.
+    """
+    result = campaign_service.pause_campaign(db=db, campaign_id=campaign_id)
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("message"))
+    return result.get("campaign")
+
+
+@router.get("/{campaign_id}/status", response_model=campaign_schema.CampaignStatus)
+def get_campaign_status(
+    campaign_id: int,
+    db: Session = Depends(get_db),
+    current_user: Agent = Depends(get_current_user),
+):
+    """
+    Get real-time status and statistics for a campaign.
+    """
+    # First, check if the campaign exists to return a 404 if not
+    campaign = campaign_service.get_campaign(db, campaign_id=campaign_id)
+    if campaign is None:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    status_data = report_service.get_campaign_status(db=db, campaign_id=campaign_id)
+    return status_data
+
+
+@router.get("/{campaign_id}/preview", response_model=campaign_schema.CampaignPreview)
+def preview_campaign(
+    campaign_id: int,
+    db: Session = Depends(get_db),
+    current_user: Agent = Depends(get_current_user),
+):
+    """
+    Get a preview of personalized messages for a campaign.
+    """
+    campaign = campaign_service.get_campaign(db, campaign_id=campaign_id)
+    if campaign is None:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    execution_service = CampaignExecutionService(db=db)
+    preview_data = execution_service.preview_campaign(campaign_id=campaign_id)
+    return preview_data

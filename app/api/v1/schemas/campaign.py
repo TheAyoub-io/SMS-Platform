@@ -26,3 +26,24 @@ class CampaignInDBBase(CampaignBase):
 
 class Campaign(CampaignInDBBase):
     pass
+
+
+from typing import List
+
+class CampaignStatus(BaseModel):
+    total_messages: int = 0
+    sent: int = 0
+    delivered: int = 0
+    failed: int = 0
+    pending: int = 0
+
+
+class CampaignPreviewItem(BaseModel):
+    contact_name: str
+    phone_number: str
+    personalized_message: str
+
+
+class CampaignPreview(BaseModel):
+    preview_count: int
+    items: List[CampaignPreviewItem]
