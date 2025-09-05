@@ -23,11 +23,13 @@ def create_contact(
     return contact_service.create_contact(db=db, contact=contact)
 
 
+from fastapi import Query
+
 @router.get("/", response_model=List[contact_schema.Contact])
 def read_contacts(
     skip: int = 0,
     limit: int = 100,
-    segment: str = None,
+    segments: str = Query(None, description="Comma-separated list of segments to filter by"),
     zone_geographique: str = None,
     statut_opt_in: bool = None,
     db: Session = Depends(get_db),
@@ -37,7 +39,7 @@ def read_contacts(
     Retrieve contacts with optional filtering.
     """
     filters = {
-        "segment": segment,
+        "segments": segments.split(',') if segments else [],
         "zone_geographique": zone_geographique,
         "statut_opt_in": statut_opt_in,
     }
@@ -92,6 +94,23 @@ def delete_contact(
     if db_contact is None:
         raise HTTPException(status_code=404, detail="Contact not found")
     return contact_service.delete_contact(db=db, contact_id=contact_id)
+
+
+@router.post("/bulk-opt-status", response_model=dict)
+def bulk_update_contact_opt_status(
+    payload: contact_schema.BulkOptInUpdate,
+    db: Session = Depends(get_db),
+    current_user: Agent = Depends(get_current_user),
+):
+    """
+    Bulk update the opt-in status for a list of contacts.
+    """
+    result = contact_service.bulk_update_opt_status(
+        db=db,
+        contact_ids=payload.contact_ids,
+        opt_in_status=payload.opt_in_status
+    )
+    return result
 
 
 @router.post("/import", response_model=dict)

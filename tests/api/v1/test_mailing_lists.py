@@ -195,6 +195,31 @@ class TestMailingListCRUD:
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
 
+    def test_duplicate_mailing_list(self, client: TestClient, admin_auth_headers: dict,
+                                    test_mailing_list, test_contacts, db_session: Session):
+        """Test duplicating a mailing list"""
+        # First, add some contacts to the original list to ensure they are not copied
+        client.post(
+            f"/mailing-lists/{test_mailing_list}/contacts",
+            json={"contact_ids": test_contacts},
+            headers=admin_auth_headers,
+        )
+
+        # Execute the duplicate request
+        response = client.post(f"/mailing-lists/{test_mailing_list}/duplicate", headers=admin_auth_headers)
+
+        # Assert the response
+        assert response.status_code == 201
+        data = response.json()
+        assert data["nom_liste"] == f"Copy of Test Mailing List"
+        assert data["id_liste"] != test_mailing_list
+        assert len(data["contacts"]) == 0 # Ensure contacts are not copied
+
+        # Verify in the database
+        new_list = db_session.query(MailingList).filter(MailingList.id_liste == data["id_liste"]).first()
+        assert new_list is not None
+        assert len(new_list.contacts) == 0
+
 
 class TestContactOperations:
     """Test contact operations within mailing lists"""
@@ -363,7 +388,7 @@ class TestContactFiltering:
         """Test filtering contacts by segment"""
         response = client.get(
             "/contacts/",
-            params={"segment": "VIP"},
+            params={"segments": "VIP"},
             headers=admin_auth_headers,
         )
 

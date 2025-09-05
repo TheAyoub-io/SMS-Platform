@@ -23,8 +23,8 @@ def get_contacts(db: Session, filters: dict, skip: int = 0, limit: int = 100):
     query = db.query(Contact)
 
     # Apply filters dynamically
-    if "segment" in filters:
-        query = query.filter(Contact.segment == filters["segment"])
+    if "segments" in filters and filters["segments"]:
+        query = query.filter(Contact.segment.in_(filters["segments"]))
     if "zone_geographique" in filters:
         query = query.filter(Contact.zone_geographique == filters["zone_geographique"])
     if "statut_opt_in" in filters:
@@ -138,3 +138,20 @@ def filter_contacts_by_criteria(db: Session, filters: ContactFilter, skip: int =
 
 def get_contact_segments(db: Session):
     return db.query(distinct(Contact.segment)).all()
+
+
+def bulk_update_opt_status(db: Session, contact_ids: list[int], opt_in_status: bool):
+    """
+    Performs a bulk update of the opt-in status for a list of contacts.
+    """
+    if not contact_ids:
+        return {"updated_count": 0}
+
+    update_stmt = (
+        Contact.__table__.update()
+        .where(Contact.id_contact.in_(contact_ids))
+        .values(statut_opt_in=opt_in_status)
+    )
+    result = db.execute(update_stmt)
+    db.commit()
+    return {"updated_count": result.rowcount}
