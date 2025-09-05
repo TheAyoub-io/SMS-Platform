@@ -1,4 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useEffect, useState } from 'react';
 
 const data = [
   { name: 'Campaign A', sent: 4000, failed: 2400 },
@@ -11,6 +12,12 @@ const data = [
 ];
 
 const DashboardPage = () => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
@@ -35,18 +42,20 @@ const DashboardPage = () => {
 
       <div className="mt-8">
         <h2 className="text-xl font-semibold text-gray-800">Campaign Performance</h2>
-        <div className="p-6 mt-4 bg-white rounded-lg shadow-md">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="sent" fill="#8884d8" />
-              <Bar dataKey="failed" fill="#82ca9d" />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="p-6 mt-4 bg-white rounded-lg shadow-md" style={{ width: '100%', height: 300 }}>
+          {isClient && (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="sent" fill="#8884d8" />
+                <Bar dataKey="failed" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
     </div>
