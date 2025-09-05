@@ -1,65 +1,63 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
-import LoginPage from "../pages/LoginPage";
-import Layout from "../components/layout/Layout";
-import ProtectedRoute from "./ProtectedRoute";
-import DashboardPage from "../pages/DashboardPage";
-import CampaignsPage from "../pages/CampaignsPage";
-import ContactsPage from "../pages/ContactsPage";
-import UsersPage from "../pages/UsersPage";
-import TemplatesPage from "../pages/TemplatesPage";
-import SettingsPage from "../pages/SettingsPage";
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import LoginPage from '../pages/LoginPage';
+import Layout from '../components/layout/Layout';
+import ProtectedRoute from './ProtectedRoute';
+import DashboardPage from '../pages/DashboardPage';
+
+// Placeholder pages for other routes
+const CampaignsPage = () => <div>Campaigns Page</div>;
+const ContactsPage = () => <div>Contacts Page</div>;
+const UsersPage = () => <div>Users Page</div>;
+const SettingsPage = () => <div>Settings Page</div>;
 
 export const router = createBrowserRouter([
   {
-    path: "/login",
+    path: '/login',
     element: <LoginPage />,
   },
   {
-    path: "/",
+    path: '/',
     element: <ProtectedRoute />,
     children: [
       {
         element: <Layout />,
         children: [
           {
-            path: "dashboard",
+            path: 'dashboard',
             element: <DashboardPage />,
           },
           {
-            path: "campaigns",
+            path: 'campaigns',
             element: <CampaignsPage />,
           },
           {
-            path: "contacts",
+            path: 'contacts',
             element: <ContactsPage />,
           },
           {
-            path: "templates",
-            element: <TemplatesPage />,
-          },
-          {
-            path: "users",
-            element: (
-              <ProtectedRoute allowedRoles={["admin"]} />
-            ),
+            path: 'users',
+            element: <ProtectedRoute allowedRoles={['admin']} />,
             children: [
               {
-                path: "",
+                path: '',
                 element: <UsersPage />,
               },
             ],
           },
           {
-            path: "settings",
+            path: 'settings',
             element: <SettingsPage />,
           },
           {
-            // Redirect from root to dashboard if logged in
-            path: "",
+            path: '',
             element: <Navigate to="/dashboard" replace />,
           },
         ],
       },
     ],
   },
+  {
+    path: '*',
+    element: <Navigate to="/" replace />,
+  }
 ]);
