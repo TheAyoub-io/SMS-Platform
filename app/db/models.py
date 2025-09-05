@@ -76,6 +76,10 @@ class Campaign(Base):
             return False
         return True
 
+    def can_be_modified(self) -> bool:
+        """Checks if the campaign can be modified (i.e., it has not been launched)."""
+        return self.statut == 'draft'
+
 class Contact(Base):
     __tablename__ = 'contacts'
     id_contact = Column(Integer, primary_key=True)
