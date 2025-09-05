@@ -1,7 +1,6 @@
 {
   "name": "sms-campaign-frontend",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

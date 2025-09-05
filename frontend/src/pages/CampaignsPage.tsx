@@ -1,136 +1,80 @@
-import { useEffect, useState } from "react";
-import { apiService } from "../services/api";
-import Table from "../components/common/Table";
-import Modal from "../components/common/Modal";
-import CampaignForm from "../components/CampaignForm";
-import { toast } from "react-hot-toast";
+import { useState } from 'react';
+import { useCampaigns, useDeleteCampaign, useLaunchCampaign, usePauseCampaign } from '../hooks/useCampaigns';
+import { Button } from '../components/common/Button';
+import { PlusCircle, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export interface Campaign {
-  id: number;
-  name: string;
-  status: string;
-  type: string;
-  start_date: string;
-  end_date: string;
+    id: number;
+    name: string;
+    status: string;
+    type: string;
+    created_at: string;
 }
 
 const CampaignsPage = () => {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(
-    null
-  );
+  const [filters, setFilters] = useState({});
+  const { data: campaigns, isLoading } = useCampaigns(filters);
+  const deleteCampaignMutation = useDeleteCampaign();
+  const launchCampaignMutation = useLaunchCampaign();
+  const pauseCampaignMutation = usePauseCampaign();
 
-  const fetchCampaigns = async () => {
-    try {
-      setLoading(true);
-      const { data } = await apiService.get<Campaign[]>("/campaigns");
-      setCampaigns(data);
-    } catch (error) {
-      toast.error("Failed to fetch campaigns");
-    } finally {
-      setLoading(false);
+  const handleDelete = (id: number) => {
+    if (window.confirm('Are you sure you want to delete this campaign?')) {
+      deleteCampaignMutation.mutate(id);
     }
   };
 
-  useEffect(() => {
-    fetchCampaigns();
-  }, []);
-
-  const handleCreate = () => {
-    setEditingCampaign(null);
-    setIsModalOpen(true);
+  const handleLaunch = (id: number) => {
+    launchCampaignMutation.mutate(id);
   };
 
-  const handleEdit = (campaign: Campaign) => {
-    setEditingCampaign(campaign);
-    setIsModalOpen(true);
+  const handlePause = (id: number) => {
+    pauseCampaignMutation.mutate(id);
   };
-
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this campaign?")) {
-      try {
-        await apiService.delete(`/campaigns/${id}`);
-        toast.success("Campaign deleted successfully");
-        fetchCampaigns();
-      } catch (error) {
-        toast.error("Failed to delete campaign");
-      }
-    }
-  };
-
-  const handleFormSubmit = async (data: any) => {
-    try {
-      if (editingCampaign) {
-        await apiService.put(`/campaigns/${editingCampaign.id}`, data);
-        toast.success("Campaign updated successfully");
-      } else {
-        await apiService.post("/campaigns", data);
-        toast.success("Campaign created successfully");
-      }
-      setIsModalOpen(false);
-      fetchCampaigns();
-    } catch (error) {
-      toast.error("Failed to save campaign");
-    }
-  };
-
-  const columns = [
-    { header: "Name", accessor: "name" as const },
-    { header: "Status", accessor: "status" as const },
-    { header: "Type", accessor: "type" as const },
-    { header: "Start Date", accessor: "start_date" as const },
-    { header: "End Date", accessor: "end_date" as const },
-  ];
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Campaigns</h1>
-        <button
-          onClick={handleCreate}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
-        >
-          Create Campaign
-        </button>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">Campaigns</h1>
+        <Button asChild>
+          <Link to="/campaigns/new">
+            <PlusCircle className="w-5 h-5 mr-2" />
+            New Campaign
+          </Link>
+        </Button>
       </div>
 
-      {loading ? (
+      <div className="mb-4">
+        {/* Filters and Search */}
+        <div className="flex items-center gap-4">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                    type="text"
+                    placeholder="Search campaigns..."
+                    className="pl-10 pr-4 py-2 border rounded-md"
+                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                />
+            </div>
+          {/* Add more filters here */}
+        </div>
+      </div>
+
+import CampaignList from '../components/campaigns/CampaignList';
+
+// ... (keep the rest of the component the same)
+
+      {isLoading ? (
         <p>Loading campaigns...</p>
       ) : (
-        <Table<Campaign>
-          columns={columns}
-          data={campaigns}
-          renderActions={(campaign) => (
-            <div className="space-x-2">
-              <button
-                onClick={() => handleEdit(campaign)}
-                className="text-indigo-600 hover:text-indigo-900"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(campaign.id)}
-                className="text-red-600 hover:text-red-900"
-              >
-                Delete
-              </button>
-            </div>
-          )}
+        <CampaignList
+          campaigns={campaigns?.data || []}
+          onLaunch={handleLaunch}
+          onPause={handlePause}
+          onDelete={handleDelete}
         />
       )}
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingCampaign ? "Edit Campaign" : "Create Campaign"}
-      >
-        <CampaignForm
-          onSubmit={handleFormSubmit}
-          initialValues={editingCampaign || {}}
-        />
-      </Modal>
     </div>
   );
 };
