@@ -7,7 +7,7 @@ from app.db.models import Agent
 
 router = APIRouter()
 
-@router.post("/login", response_model=Token)
+@router.post("/api/v1/auth/login", response_model=Token)
 def login(form_data: UserLogin, db: Session = Depends(get_db)):
     """
     Logs in a user and returns an access token.
