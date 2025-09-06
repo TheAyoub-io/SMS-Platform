@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -47,7 +47,7 @@ class MailingListService:
         if not db_list:
             return None
 
-        db_list.deleted_at = datetime.utcnow()
+        db_list.deleted_at = datetime.now(timezone.utc)
         self.db.commit()
         return db_list
 

@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.db.models import SMSQueue, Message, Campaign
@@ -22,7 +22,7 @@ def send_scheduled_campaigns():
     try:
         scheduled_campaigns = db.query(Campaign).filter(
             Campaign.statut == 'scheduled',
-            Campaign.date_debut <= datetime.utcnow()
+            Campaign.date_debut <= datetime.now(timezone.utc)
         ).all()
 
         if not scheduled_campaigns:
@@ -95,7 +95,7 @@ def process_sms_queue():
                 # Create permanent message record
                 new_message = Message(
                     contenu=item.message_content,
-                    date_envoi=datetime.utcnow(),
+                    date_envoi=datetime.now(timezone.utc),
                     statut_livraison=message_status,
                     identifiant_expediteur=provider.twilio_phone_number,
                     external_message_id=response.get("sid"),
@@ -107,7 +107,7 @@ def process_sms_queue():
 
                 # Update queue item
                 item.status = 'sent'
-                item.processed_at = datetime.utcnow()
+                item.processed_at = datetime.now(timezone.utc)
                 logger.info(f"Successfully sent message from queue item {item.id}")
 
             except TwilioApiError as e:

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.services.mailing_list_service import MailingListService
 from app.db.models import MailingList, Contact, MessageTemplate, Campaign
 from app.api.v1.schemas.mailing_list import MailingListCreate, MailingListUpdate
-from datetime import datetime
+from datetime import datetime, timezone
 
 @pytest.fixture
 def setup_contacts_and_list(db_session: Session):
@@ -13,7 +13,7 @@ def setup_contacts_and_list(db_session: Session):
         Contact(nom="List", prenom="User2", numero_telephone="100000002"),
         Contact(nom="List", prenom="User3", numero_telephone="100000003"),
     ]
-    campaign = Campaign(nom_campagne="Fixture Campaign", date_debut=datetime.utcnow(), date_fin=datetime.utcnow(), statut="draft", type_campagne="promotional", id_agent=1)
+    campaign = Campaign(nom_campagne="Fixture Campaign", date_debut=datetime.now(timezone.utc), date_fin=datetime.now(timezone.utc), statut="draft", type_campagne="promotional", id_agent=1)
     db_session.add_all(contacts)
     db_session.add(campaign)
     db_session.commit()
@@ -26,7 +26,7 @@ def setup_contacts_and_list(db_session: Session):
 
 def test_create_list(db_session: Session):
     service = MailingListService(db=db_session)
-    campaign = Campaign(nom_campagne="Another Fixture Campaign", date_debut=datetime.utcnow(), date_fin=datetime.utcnow(), statut="draft", type_campagne="promotional", id_agent=1)
+    campaign = Campaign(nom_campagne="Another Fixture Campaign", date_debut=datetime.now(timezone.utc), date_fin=datetime.now(timezone.utc), statut="draft", type_campagne="promotional", id_agent=1)
     db_session.add(campaign)
     db_session.commit()
     list_data = MailingListCreate(nom_liste="New List", description="Desc", id_campagne=campaign.id_campagne)

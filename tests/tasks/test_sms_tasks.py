@@ -2,7 +2,7 @@ from unittest.mock import patch, MagicMock
 from sqlalchemy.orm import Session
 from app.tasks.sms_tasks import process_sms_queue, send_scheduled_campaigns
 from app.db.models import Campaign, Contact, MailingList, SMSQueue, Message
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 @patch("app.tasks.sms_tasks.CampaignExecutionService")
 @patch("app.tasks.sms_tasks.SessionLocal")
@@ -15,8 +15,8 @@ def test_send_scheduled_campaigns(MockSessionLocal, MockExecutionService, db_ses
     scheduled_campaign = Campaign(
         nom_campagne="Scheduled Campaign",
         statut="scheduled",
-        date_debut=datetime.utcnow() - timedelta(hours=1), # Scheduled for 1 hour ago
-        date_fin=datetime.utcnow() + timedelta(days=1),
+        date_debut=datetime.now(timezone.utc) - timedelta(hours=1), # Scheduled for 1 hour ago
+        date_fin=datetime.now(timezone.utc) + timedelta(days=1),
         type_campagne="promotional", id_agent=1
     )
     db_session.add(scheduled_campaign)
@@ -40,13 +40,13 @@ def test_process_sms_queue_success(MockTwilioProvider, MockSessionLocal, db_sess
     mock_provider_instance.twilio_phone_number = "+15005550006"
 
     contact = Contact(nom="Queue", prenom="Proc", numero_telephone="+33712345678")
-    campaign = Campaign(nom_campagne="Proc Campaign", date_debut=datetime.utcnow(), date_fin=datetime.utcnow(), statut="active", type_campagne="promotional", id_agent=1)
+    campaign = Campaign(nom_campagne="Proc Campaign", date_debut=datetime.now(timezone.utc), date_fin=datetime.now(timezone.utc), statut="active", type_campagne="promotional", id_agent=1)
     mailing_list = MailingList(nom_liste="Proc List", campaign=campaign, contacts=[contact])
     db_session.add_all([contact, campaign, mailing_list])
     db_session.commit()
     contact_id = contact.id_contact
 
-    queue_item = SMSQueue(campaign_id=campaign.id_campagne, contact_id=contact_id, message_content="Go", scheduled_at=datetime.utcnow())
+    queue_item = SMSQueue(campaign_id=campaign.id_campagne, contact_id=contact_id, message_content="Go", scheduled_at=datetime.now(timezone.utc))
     db_session.add(queue_item)
     db_session.commit()
     queue_item_id = queue_item.id
@@ -75,13 +75,13 @@ def test_process_sms_queue_failure_and_retry(MockTwilioProvider, MockSessionLoca
     mock_provider_instance.send_sms.side_effect = TwilioApiError("Test API Error")
 
     contact = Contact(nom="QueueFail", prenom="Proc", numero_telephone="+33787654321")
-    campaign = Campaign(nom_campagne="Proc Campaign Fail", date_debut=datetime.utcnow(), date_fin=datetime.utcnow(), statut="active", type_campagne="promotional", id_agent=1)
+    campaign = Campaign(nom_campagne="Proc Campaign Fail", date_debut=datetime.now(timezone.utc), date_fin=datetime.now(timezone.utc), statut="active", type_campagne="promotional", id_agent=1)
     mailing_list_fail = MailingList(nom_liste="Proc List Fail", campaign=campaign, contacts=[contact])
     db_session.add_all([contact, campaign, mailing_list_fail])
     db_session.commit()
     contact_id = contact.id_contact
 
-    queue_item = SMSQueue(campaign_id=campaign.id_campagne, contact_id=contact_id, message_content="Fail", scheduled_at=datetime.utcnow())
+    queue_item = SMSQueue(campaign_id=campaign.id_campagne, contact_id=contact_id, message_content="Fail", scheduled_at=datetime.now(timezone.utc))
     db_session.add(queue_item)
     db_session.commit()
     queue_item_id = queue_item.id
@@ -111,7 +111,7 @@ def test_process_sms_queue_respects_rate_limit(MockTwilioProvider, MockSessionLo
 
     # Create a campaign and contact to associate with the queue items
     contact = Contact(nom="Rate", prenom="Limit", numero_telephone="+33711111111")
-    campaign = Campaign(nom_campagne="Rate Limit Campaign", date_debut=datetime.utcnow(), date_fin=datetime.utcnow(), statut="active", type_campagne="promotional", id_agent=1)
+    campaign = Campaign(nom_campagne="Rate Limit Campaign", date_debut=datetime.now(timezone.utc), date_fin=datetime.now(timezone.utc), statut="active", type_campagne="promotional", id_agent=1)
     # This mailing list is required by the task to create the final Message record.
     mailing_list = MailingList(nom_liste="Rate Limit List", campaign=campaign, contacts=[contact])
     db_session.add_all([contact, campaign, mailing_list])
@@ -119,7 +119,7 @@ def test_process_sms_queue_respects_rate_limit(MockTwilioProvider, MockSessionLo
 
     # Create 10 items in the queue
     for i in range(10):
-        queue_item = SMSQueue(campaign_id=campaign.id_campagne, contact_id=contact.id_contact, message_content=f"Msg {i}", scheduled_at=datetime.utcnow())
+        queue_item = SMSQueue(campaign_id=campaign.id_campagne, contact_id=contact.id_contact, message_content=f"Msg {i}", scheduled_at=datetime.now(timezone.utc))
         db_session.add(queue_item)
     db_session.commit()
 
