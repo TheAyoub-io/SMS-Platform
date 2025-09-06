@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from app.db.models import Campaign, Contact, MailingList, Message, SMSQueue
 
@@ -104,8 +104,8 @@ def test_full_campaign_workflow(client: TestClient, db_session: Session, admin_a
     # Note: The E2E test doesn't run the Celery worker, so messages won't move from 'pending'.
     # We will simulate this by manually creating 'Message' entries as if they were processed.
     db_session.query(SMSQueue).delete() # Clear the queue
-    msg1 = Message(contenu="...", date_envoi=datetime.utcnow(), statut_livraison='delivered', identifiant_expediteur='test', id_liste=list_id, id_contact=contact_ids[0], id_campagne=campaign_id)
-    msg2 = Message(contenu="...", date_envoi=datetime.utcnow(), statut_livraison='sent', identifiant_expediteur='test', id_liste=list_id, id_contact=contact_ids[1], id_campagne=campaign_id)
+    msg1 = Message(contenu="...", date_envoi=datetime.now(timezone.utc), statut_livraison='delivered', identifiant_expediteur='test', id_liste=list_id, id_contact=contact_ids[0], id_campagne=campaign_id)
+    msg2 = Message(contenu="...", date_envoi=datetime.now(timezone.utc), statut_livraison='sent', identifiant_expediteur='test', id_liste=list_id, id_contact=contact_ids[1], id_campagne=campaign_id)
     db_session.add_all([msg1, msg2])
     db_session.commit()
 

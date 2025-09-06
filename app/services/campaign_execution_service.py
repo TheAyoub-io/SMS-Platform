@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.db.models import Campaign, Contact, SMSQueue
 from app.utils.phone_validator import validate_and_format_phone_number, InvalidPhoneNumberError
@@ -57,7 +57,7 @@ class CampaignExecutionService:
                         campaign_id=campaign.id_campagne,
                         contact_id=contact.id_contact,
                         message_content=personalized_content,
-                        scheduled_at=datetime.utcnow(),
+                        scheduled_at=datetime.now(timezone.utc),
                         status='pending'
                     )
                     self.db.add(new_queue_item)

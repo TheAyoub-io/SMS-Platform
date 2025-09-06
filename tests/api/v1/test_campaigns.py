@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from app.services import campaign_service
 from app.api.v1.schemas import campaign as campaign_schema
@@ -87,7 +87,7 @@ def test_get_campaign_status(client: TestClient, db_session: Session, admin_auth
     from app.db.models import Message
     campaign = Campaign(
         nom_campagne="Status Campaign", statut="active",
-        date_debut=datetime.utcnow(), date_fin=datetime.utcnow(),
+        date_debut=datetime.now(timezone.utc), date_fin=datetime.now(timezone.utc),
         type_campagne="promotional", id_agent=1
     )
     contact = Contact(nom="Status", prenom="Test", numero_telephone="+33765432198")
@@ -97,10 +97,10 @@ def test_get_campaign_status(client: TestClient, db_session: Session, admin_auth
 
     # Create messages with different statuses
     messages_to_create = [
-        Message(contenu="msg1", date_envoi=datetime.utcnow(), statut_livraison='delivered', identifiant_expediteur='test', id_liste=mailing_list.id_liste, id_contact=contact.id_contact, id_campagne=campaign.id_campagne),
-        Message(contenu="msg2", date_envoi=datetime.utcnow(), statut_livraison='delivered', identifiant_expediteur='test', id_liste=mailing_list.id_liste, id_contact=contact.id_contact, id_campagne=campaign.id_campagne),
-        Message(contenu="msg3", date_envoi=datetime.utcnow(), statut_livraison='sent', identifiant_expediteur='test', id_liste=mailing_list.id_liste, id_contact=contact.id_contact, id_campagne=campaign.id_campagne),
-        Message(contenu="msg4", date_envoi=datetime.utcnow(), statut_livraison='failed', identifiant_expediteur='test', id_liste=mailing_list.id_liste, id_contact=contact.id_contact, id_campagne=campaign.id_campagne),
+        Message(contenu="msg1", date_envoi=datetime.now(timezone.utc), statut_livraison='delivered', identifiant_expediteur='test', id_liste=mailing_list.id_liste, id_contact=contact.id_contact, id_campagne=campaign.id_campagne),
+        Message(contenu="msg2", date_envoi=datetime.now(timezone.utc), statut_livraison='delivered', identifiant_expediteur='test', id_liste=mailing_list.id_liste, id_contact=contact.id_contact, id_campagne=campaign.id_campagne),
+        Message(contenu="msg3", date_envoi=datetime.now(timezone.utc), statut_livraison='sent', identifiant_expediteur='test', id_liste=mailing_list.id_liste, id_contact=contact.id_contact, id_campagne=campaign.id_campagne),
+        Message(contenu="msg4", date_envoi=datetime.now(timezone.utc), statut_livraison='failed', identifiant_expediteur='test', id_liste=mailing_list.id_liste, id_contact=contact.id_contact, id_campagne=campaign.id_campagne),
     ]
     db_session.add_all(messages_to_create)
     db_session.commit()

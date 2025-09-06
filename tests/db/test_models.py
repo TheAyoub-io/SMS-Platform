@@ -1,6 +1,6 @@
 import pytest
 from app.db.models import Campaign
-from datetime import datetime
+from datetime import datetime, timezone
 
 class TestCampaignModel:
     @pytest.mark.parametrize(
@@ -19,8 +19,8 @@ class TestCampaignModel:
         """
         campaign = Campaign(
             nom_campagne="Test Campaign",
-            date_debut=datetime.utcnow(),
-            date_fin=datetime.utcnow(),
+            date_debut=datetime.now(timezone.utc),
+            date_fin=datetime.now(timezone.utc),
             statut=status,
             type_campagne="promotional",
             id_agent=1

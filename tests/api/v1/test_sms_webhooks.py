@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -7,11 +7,11 @@ from app.db.models import Message, Contact, Campaign, MailingList
 def test_twilio_webhook_updates_status_delivered(client: TestClient, db_session: Session):
     # --- Setup ---
     contact = Contact(nom="Webhook", prenom="Test", numero_telephone="+15551234567", email="hook@example.com")
-    campaign = Campaign(nom_campagne="Hook Campaign", date_debut=datetime.utcnow(), date_fin=datetime.utcnow(), statut="active", type_campagne="promotional", id_agent=1)
+    campaign = Campaign(nom_campagne="Hook Campaign", date_debut=datetime.now(timezone.utc), date_fin=datetime.now(timezone.utc), statut="active", type_campagne="promotional", id_agent=1)
     mailing_list = MailingList(nom_liste="Hook List", campaign=campaign, contacts=[contact])
     message = Message(
         contenu="Test message",
-        date_envoi=datetime.utcnow(),
+        date_envoi=datetime.now(timezone.utc),
         statut_livraison="sent",
         identifiant_expediteur="test",
         external_message_id="SMwebhookdelivered",
@@ -38,11 +38,11 @@ def test_twilio_webhook_updates_status_delivered(client: TestClient, db_session:
 def test_twilio_webhook_updates_status_failed(client: TestClient, db_session: Session):
     # --- Setup ---
     contact = Contact(nom="HookFail", prenom="Test", numero_telephone="+15551234568", email="hookfail@example.com")
-    campaign = Campaign(nom_campagne="Hook Campaign Fail", date_debut=datetime.utcnow(), date_fin=datetime.utcnow(), statut="active", type_campagne="promotional", id_agent=1)
+    campaign = Campaign(nom_campagne="Hook Campaign Fail", date_debut=datetime.now(timezone.utc), date_fin=datetime.now(timezone.utc), statut="active", type_campagne="promotional", id_agent=1)
     mailing_list = MailingList(nom_liste="Hook List Fail", campaign=campaign, contacts=[contact])
     message = Message(
         contenu="Test message",
-        date_envoi=datetime.utcnow(),
+        date_envoi=datetime.now(timezone.utc),
         statut_livraison="sent",
         identifiant_expediteur="test",
         external_message_id="SMwebhookfailed",
