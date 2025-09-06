@@ -93,3 +93,6 @@ ipython_config.py
 .idea/
 .vscode/
 *.swp
+
+# Frontend
+frontend/node_modules/
