@@ -18,3 +18,4 @@ pytest-env
 httpx
 reportlab
 xlsxwriter
+openpyxl
