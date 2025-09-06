@@ -261,3 +261,19 @@ class MailingListService:
         self.db.commit()
 
         return {"success": True, "contacts_removed": contacts_removed_count}
+
+    def duplicate_list(self, list_id: int) -> MailingList | None:
+        """
+        Creates a copy of a mailing list without its contacts.
+        """
+        original_list = self.get_list(list_id)
+        if not original_list:
+            return None
+
+        new_list_data = MailingListCreate(
+            nom_liste=f"Copy of {original_list.nom_liste}",
+            description=original_list.description,
+            id_campagne=original_list.id_campagne
+        )
+
+        return self.create_list(list_data=new_list_data)

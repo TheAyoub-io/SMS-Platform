@@ -81,6 +81,23 @@ def add_contacts_to_list(
         raise HTTPException(status_code=404, detail="Mailing list not found")
     return result
 
+
+@router.post("/{list_id}/duplicate", response_model=list_schema.MailingList, status_code=status.HTTP_201_CREATED)
+def duplicate_mailing_list(
+    list_id: int,
+    db: Session = Depends(get_db),
+    current_user: Agent = Depends(get_current_user)
+):
+    """
+    Duplicate a mailing list, creating a new list with the same details
+    but without any contacts.
+    """
+    service = MailingListService(db)
+    new_list = service.duplicate_list(list_id)
+    if new_list is None:
+        raise HTTPException(status_code=404, detail="Original mailing list not found")
+    return new_list
+
 @router.delete("/{list_id}/contacts/bulk-remove", response_model=dict, status_code=status.HTTP_200_OK)
 def bulk_remove_contacts(
     list_id: int,

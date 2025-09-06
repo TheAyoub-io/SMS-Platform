@@ -25,5 +25,12 @@ class ContactInDBBase(ContactBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+from typing import List
+
 class Contact(ContactInDBBase):
     pass
+
+
+class BulkOptInUpdate(BaseModel):
+    contact_ids: List[int]
+    opt_in_status: bool
