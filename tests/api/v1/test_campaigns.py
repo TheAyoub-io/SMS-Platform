@@ -56,7 +56,7 @@ def test_launch_campaign(client: TestClient, db_session: Session, admin_auth_hea
     assert data["queued_count"] == 1
 
     # Verify db changes
-    updated_campaign = db_session.query(Campaign).get(campaign.id_campagne)
+    updated_campaign = db_session.get(Campaign, campaign.id_campagne)
     assert updated_campaign.statut == "active"
     queue_item = db_session.query(SMSQueue).filter_by(campaign_id=campaign.id_campagne).one()
     assert queue_item is not None
@@ -78,7 +78,7 @@ def test_pause_campaign(client: TestClient, db_session: Session, admin_auth_head
 
     # --- Assert ---
     assert response.status_code == 200
-    updated_campaign = db_session.query(Campaign).get(campaign.id_campagne)
+    updated_campaign = db_session.get(Campaign, campaign.id_campagne)
     assert updated_campaign.statut == "paused"
 
 
