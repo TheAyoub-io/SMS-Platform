@@ -1,6 +1,7 @@
 import React, { useState, Fragment } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { Toaster } from 'react-hot-toast';
 import {
   LogOut,
   Menu,
@@ -36,6 +37,7 @@ const Layout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      <Toaster position="top-center" />
       {/* Mobile sidebar */}
       <Transition.Root show={sidebarOpen} as={Fragment}>
         <div className="relative z-40 md:hidden">
