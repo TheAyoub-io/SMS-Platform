@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s # By default, scrape targets every 15 seconds.
+
+scrape_configs:
+  - job_name: 'sms_platform_app'
+    # In a Docker environment, Prometheus would need to be on the same network
+    # to resolve the service name 'app'. Or you would use the host's IP.
+    static_configs:
+      - targets: ['app:8000'] # Assuming the app service exposes metrics on port 8000
+    # The application would need a library like 'starlette-prometheus'
+    # to expose a /metrics endpoint for Prometheus to scrape.
+    # metrics_path: /metrics
+
+  - job_name: 'node_exporter'
+    # Node Exporter is a common tool to export machine-level metrics
+    # (CPU, memory, disk usage). You would run it as another service.
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: 'postgres_exporter'
+    # Postgres Exporter for detailed database metrics.
+    static_configs:
+      - targets: ['postgres-exporter:9187']

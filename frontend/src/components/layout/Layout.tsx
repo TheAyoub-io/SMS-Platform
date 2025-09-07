@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { LogOut, LayoutDashboard, MessageSquare, List, Settings, Users, FileText, Monitor } from 'lucide-react';
+import { LogOut, LayoutDashboard, MessageSquare, List, Settings, Users, FileText, Monitor, BarChart2 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 interface LayoutProps {
@@ -36,6 +36,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <nav className="mt-6 px-4 flex-1">
           <NavItem to="/dashboard" icon={<LayoutDashboard size={20} />}>Dashboard</NavItem>
           <NavItem to="/campaigns" icon={<MessageSquare size={20} />}>Campaigns</NavItem>
+          <NavItem to="/analytics" icon={<BarChart2 size={20} />}>Analytics</NavItem>
           <NavItem to="/contacts" icon={<Users size={20} />}>Contacts</NavItem>
           <NavItem to="/templates" icon={<FileText size={20} />}>Templates</NavItem>
           <NavItem to="/mailing-lists" icon={<List size={20} />}>Mailing Lists</NavItem>
