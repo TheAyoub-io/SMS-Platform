@@ -17,6 +17,8 @@
     "zod": "^3.21.4",
     "react-hot-toast": "^2.4.0",
     "lucide-react": "^0.323.0",
+    "papaparse": "^5.4.1",
+    "react-dropzone": "^14.2.3",
     "recharts": "^2.5.0",
     "date-fns": "^2.29.3",
     "clsx": "^1.2.1"
