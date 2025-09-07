@@ -30,7 +30,7 @@ def test_twilio_webhook_updates_status_delivered(client: TestClient, db_session:
 
     # --- Assert ---
     assert response.status_code == 204
-    updated_message = db_session.query(Message).get(message.id_message)
+    updated_message = db_session.get(Message, message.id_message)
     assert updated_message.statut_livraison == "delivered"
     assert updated_message.cost == Decimal("0.0075")
 
@@ -61,6 +61,6 @@ def test_twilio_webhook_updates_status_failed(client: TestClient, db_session: Se
 
     # --- Assert ---
     assert response.status_code == 204
-    updated_message = db_session.query(Message).get(message.id_message)
+    updated_message = db_session.get(Message, message.id_message)
     assert updated_message.statut_livraison == "failed"
     assert updated_message.error_message == "30005-Message-Delivery-Unknown-error"

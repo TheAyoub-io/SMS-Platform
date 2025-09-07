@@ -65,7 +65,7 @@ def test_full_campaign_workflow(client: TestClient, db_session: Session, admin_a
     db_session.commit()
 
     # To update the campaign, we must send the full object
-    campaign_obj_before_update = db_session.query(Campaign).get(campaign_id)
+    campaign_obj_before_update = db_session.get(Campaign, campaign_id)
     update_payload = {
         "nom_campagne": campaign_obj_before_update.nom_campagne,
         "date_debut": campaign_obj_before_update.date_debut.isoformat(),
@@ -93,7 +93,7 @@ def test_full_campaign_workflow(client: TestClient, db_session: Session, admin_a
     assert launch_response.json()["success"] is True
 
     # Verify campaign is now active
-    campaign_obj = db_session.query(Campaign).get(campaign_id)
+    campaign_obj = db_session.get(Campaign, campaign_id)
     assert campaign_obj.statut == "active"
 
     # Verify items were added to the SMS queue
@@ -122,5 +122,5 @@ def test_full_campaign_workflow(client: TestClient, db_session: Session, admin_a
     assert pause_response.status_code == 200
 
     # === Step 8: Verify the final state ===
-    final_campaign_obj = db_session.query(Campaign).get(campaign_id)
+    final_campaign_obj = db_session.get(Campaign, campaign_id)
     assert final_campaign_obj.statut == "paused"

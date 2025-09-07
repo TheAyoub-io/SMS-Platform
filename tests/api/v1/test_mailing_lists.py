@@ -253,7 +253,7 @@ class TestContactOperations:
 
         # Verify only opt-in contacts were actually added
         for contact_id in contact_ids_in_list:
-            contact = db_session.query(Contact).get(contact_id)
+            contact = db_session.get(Contact, contact_id)
             assert contact.statut_opt_in is True
 
     def test_remove_contacts_from_list(self, client: TestClient, admin_auth_headers: dict,

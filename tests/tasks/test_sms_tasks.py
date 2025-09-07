@@ -55,7 +55,7 @@ def test_process_sms_queue_success(MockTwilioProvider, MockSessionLocal, db_sess
     process_sms_queue()
 
     # --- Assert ---
-    processed_item = db_session.query(SMSQueue).get(queue_item_id)
+    processed_item = db_session.get(SMSQueue, queue_item_id)
     assert processed_item.status == 'sent'
     assert processed_item.processed_at is not None
 
@@ -90,7 +90,7 @@ def test_process_sms_queue_failure_and_retry(MockTwilioProvider, MockSessionLoca
     process_sms_queue()
 
     # --- Assert ---
-    processed_item = db_session.query(SMSQueue).get(queue_item_id)
+    processed_item = db_session.get(SMSQueue, queue_item_id)
     assert processed_item.status == 'pending'
     assert processed_item.attempts == 1
     assert "Test API Error" in processed_item.error_message

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from .contact import Contact  # Assuming a contact schema exists
@@ -25,9 +25,7 @@ class MailingList(MailingListBase):
     id_campagne: int
     contacts: List[Contact] = []
     created_at: datetime
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class BulkContactOperation(BaseModel):
     contact_ids: List[int]
