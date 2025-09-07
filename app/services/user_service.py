@@ -2,14 +2,18 @@ from sqlalchemy.orm import Session
 from app.db.models import Agent
 from app.api.v1.schemas.user import UserCreate, UserUpdate
 from app.core.security import get_password_hash
+from app.services.audit_service import AuditService
 
-def create_user(db: Session, user: UserCreate):
+def create_user(db: Session, user: UserCreate, current_admin: Agent):
     user_data = user.model_dump()
     hashed_password = get_password_hash(user_data.pop("password"))
     db_user = Agent(**user_data, mot_de_passe=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
+    AuditService.log_activity(db, user=current_admin, action="create_user", table_affected="agents", record_id=db_user.id_agent)
+
     return db_user
 
 def get_user(db: Session, user_id: int):
