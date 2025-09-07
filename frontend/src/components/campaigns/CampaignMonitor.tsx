@@ -1,7 +1,8 @@
 import React from 'react';
-import { useCampaignStatus } from '../../hooks/useCampaigns';
+import { useCampaignStatus, usePauseCampaign, useUpdateCampaign } from '../../hooks/useCampaigns';
 import { Campaign } from '../../services/campaignApi';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Pause, Play } from 'lucide-react';
 
 interface CampaignMonitorProps {
   campaign: Campaign;
@@ -9,20 +10,24 @@ interface CampaignMonitorProps {
 
 const CampaignMonitor: React.FC<CampaignMonitorProps> = ({ campaign }) => {
   const { data: status, isLoading, isError } = useCampaignStatus(campaign.id_campagne, {
-    enabled: campaign.statut === 'active',
+    enabled: campaign.statut === 'active' || campaign.statut === 'paused',
   });
 
-  if (isLoading && !status) {
-    return <p>Loading status...</p>;
-  }
+  const pauseMutation = usePauseCampaign();
+  const updateMutation = useUpdateCampaign();
 
-  if (isError) {
-    return <p className="text-red-500">Could not load campaign status.</p>;
-  }
+  const handlePause = () => {
+    pauseMutation.mutate(campaign.id_campagne);
+  };
 
-  if (!status) {
-    return <p>No status data available. Campaign may not be active.</p>;
-  }
+  const handleResume = () => {
+    const payload = { ...campaign, statut: 'active' as const };
+    updateMutation.mutate({ id: campaign.id_campagne, payload });
+  };
+
+  if (isLoading && !status) return <p>Loading status...</p>;
+  if (isError) return <p className="text-red-500">Could not load campaign status.</p>;
+  if (!status) return <p>No status data available.</p>;
 
   const chartData = [
     { name: 'Pending', count: status.pending },
@@ -36,7 +41,21 @@ const CampaignMonitor: React.FC<CampaignMonitorProps> = ({ campaign }) => {
 
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-bold mb-4">Campaign Monitor</h3>
+      <div className="flex justify-between items-start">
+        <h3 className="text-xl font-bold mb-4">Campaign Monitor</h3>
+        <div>
+          {campaign.statut === 'active' && (
+            <button onClick={handlePause} disabled={pauseMutation.isLoading} className="flex items-center px-3 py-2 text-sm bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200">
+              <Pause size={16} className="mr-1" /> Pause
+            </button>
+          )}
+          {campaign.statut === 'paused' && (
+            <button onClick={handleResume} disabled={updateMutation.isLoading} className="flex items-center px-3 py-2 text-sm bg-green-100 text-green-800 rounded-md hover:bg-green-200">
+              <Play size={16} className="mr-1" /> Resume
+            </button>
+          )}
+        </div>
+      </div>
 
       <div className="mb-6">
         <div className="flex justify-between mb-1">
@@ -53,13 +72,7 @@ const CampaignMonitor: React.FC<CampaignMonitorProps> = ({ campaign }) => {
           <BarChart data={chartData}>
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip
-              contentStyle={{
-                background: '#333',
-                border: 'none',
-                borderRadius: '0.5rem',
-              }}
-            />
+            <Tooltip contentStyle={{ background: '#333', border: 'none', borderRadius: '0.5rem' }} />
             <Legend />
             <Bar dataKey="count" fill="#3b82f6" />
           </BarChart>
