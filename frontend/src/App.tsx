@@ -6,6 +6,7 @@ import CampaignsPage from './pages/CampaignsPage';
 import CampaignDetailPage from './pages/CampaignDetailPage';
 import ContactsPage from './pages/ContactsPage';
 import TemplatesPage from './pages/TemplatesPage';
+import AdminPage from './pages/AdminPage';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { Toaster } from 'react-hot-toast';
@@ -63,6 +64,16 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <TemplatesPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <AdminPage />
                 </Layout>
               </ProtectedRoute>
             }

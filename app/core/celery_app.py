@@ -17,8 +17,8 @@ celery_app.conf.update(
     task_track_started=True,
     broker_connection_retry_on_startup=True,
     beat_schedule={
-        'process-sms-queue-every-minute': {
-            'task': 'app.tasks.sms_tasks.process_sms_queue',
+        'process-sms-batch-every-minute': {
+            'task': 'app.tasks.sms_tasks.process_sms_batch',
             'schedule': 60.0,
         },
         'send-scheduled-campaigns-every-minute': {

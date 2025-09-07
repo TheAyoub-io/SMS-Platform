@@ -40,9 +40,9 @@ def send_scheduled_campaigns():
         db.close()
 
 @celery_app.task
-def process_sms_queue():
+def process_sms_batch():
     """
-    Processes pending messages from the sms_queue table.
+    Processes a batch of pending messages from the sms_queue table.
     """
     db = SessionLocal()
     provider = TwilioProvider()
@@ -129,3 +129,43 @@ def process_sms_queue():
 
     finally:
         db.close()
+
+
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=300) # 5-minute delay
+def retry_failed_messages(self):
+    """
+    Scans for messages that have permanently failed and re-queues them for one final attempt.
+    This is for messages that failed in process_sms_batch, not for delivery failures.
+    """
+    db = SessionLocal()
+    try:
+        failed_items = db.query(SMSQueue).filter(SMSQueue.status == 'failed').all()
+        logger.info(f"Found {len(failed_items)} failed messages to retry.")
+        for item in failed_items:
+            logger.info(f"Re-queuing failed message {item.id} for campaign {item.campaign_id}.")
+            item.status = 'pending' # Reset status to be picked up by the batch processor
+            item.attempts = 0 # Reset attempts
+            item.error_message = f"Re-queued after failure at {datetime.now(timezone.utc)}"
+        db.commit()
+    except Exception as exc:
+        logger.error(f"Error during retry_failed_messages task: {exc}")
+        raise self.retry(exc=exc)
+    finally:
+        db.close()
+
+
+@celery_app.task
+def cleanup_old_messages():
+    """
+    Placeholder for a task to clean up old message records or queue items.
+    """
+    logger.info("Running cleanup_old_messages task (placeholder)...")
+    pass
+
+@celery_app.task
+def generate_campaign_reports():
+    """
+    Placeholder for a task to generate campaign analytics reports periodically.
+    """
+    logger.info("Running generate_campaign_reports task (placeholder)...")
+    pass

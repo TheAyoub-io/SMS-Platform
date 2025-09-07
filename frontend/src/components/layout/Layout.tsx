@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { LogOut, LayoutDashboard, MessageSquare, List, Settings, Users, FileText } from 'lucide-react';
+import { LogOut, LayoutDashboard, MessageSquare, List, Settings, Users, FileText, Monitor } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 interface LayoutProps {
@@ -42,6 +42,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Add more navigation items here */}
         </nav>
         <div className="p-4 border-t dark:border-gray-700">
+          {user?.role === 'admin' && (
+            <NavItem to="/admin" icon={<Monitor size={20} />}>Task Monitor</NavItem>
+          )}
            <NavItem to="/settings" icon={<Settings size={20} />}>Settings</NavItem>
         </div>
       </aside>
