@@ -1,15 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-
-// Types based on the backend schema
-interface User {
-  id_agent: number;
-  nom_agent: string;
-  identifiant: string;
-  role: 'admin' | 'agent';
-  is_active: boolean;
-}
+import { User } from '../services/authService';
 
 interface LoginCredentials {
   identifier: string;
