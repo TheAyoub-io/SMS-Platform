@@ -84,3 +84,8 @@ export const getCampaign = async (id: number): Promise<Campaign> => {
   const response = await api.get<Campaign>(`/campaigns/${id}`);
   return response.data;
 }
+
+export const pauseCampaign = async (id: number): Promise<Campaign> => {
+  const response = await api.post<Campaign>(`/campaigns/${id}/pause`);
+  return response.data;
+}

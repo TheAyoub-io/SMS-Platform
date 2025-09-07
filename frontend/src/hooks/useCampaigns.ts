@@ -7,10 +7,12 @@ import {
   launchCampaign,
   getCampaignStatus,
   getCampaign,
+  pauseCampaign,
   Campaign,
   CampaignCreationPayload
 } from '../services/campaignApi';
 import toast from 'react-hot-toast';
+
 
 const CAMPAIGNS_QUERY_KEY = 'campaigns';
 
@@ -73,4 +75,18 @@ export const useCampaignStatus = (id: number, options: { enabled: boolean }) => 
 
 export const useCampaign = (id: number) => {
     return useQuery<Campaign, Error>(['campaign', id], () => getCampaign(id));
+}
+
+export const usePauseCampaign = () => {
+    const queryClient = useQueryClient();
+    return useMutation(pauseCampaign, {
+        onSuccess: (data) => {
+            queryClient.invalidateQueries(CAMPAIGNS_QUERY_KEY);
+            queryClient.invalidateQueries(['campaign', data.id_campagne]);
+            toast.success('Campaign paused successfully!');
+        },
+        onError: (error: Error) => {
+            toast.error(`Failed to pause campaign: ${error.message}`);
+        },
+    });
 }
