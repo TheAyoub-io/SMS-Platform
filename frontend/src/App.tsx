@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import CampaignsPage from './pages/CampaignsPage';
 import CampaignDetailPage from './pages/CampaignDetailPage';
+import ContactsPage from './pages/ContactsPage';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { Toaster } from 'react-hot-toast';
@@ -41,6 +42,16 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <CampaignDetailPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contacts"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ContactsPage />
                 </Layout>
               </ProtectedRoute>
             }
