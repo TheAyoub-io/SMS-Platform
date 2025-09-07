@@ -29,11 +29,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      if (token) {
+    const checkAuth = async () => {
+      const storedToken = localStorage.getItem('token');
+      if (storedToken) {
         try {
+          // Set token for API header
+          api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
           const { data: userData } = await api.get<User>('/users/me');
           setUser(userData);
+          setToken(storedToken);
         } catch (error) {
           console.error('Failed to fetch user', error);
           setToken(null);
@@ -42,8 +46,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       setIsLoading(false);
     };
-    fetchUser();
-  }, [token]);
+
+    checkAuth();
+  }, []);
 
   const login = async (identifiant: string, mot_de_passe: string) => {
     try {
