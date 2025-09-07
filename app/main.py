@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import auth, campaigns, contacts, templates, messages, reports, users, webhooks, mailing_lists, tasks
+from app.api.v1.endpoints import auth, campaigns, contacts, templates, messages, reports, users, webhooks, mailing_lists, tasks, analytics
 from app.core.logging import setup_logging
 from app.core.monitoring import get_application_health
 
@@ -27,6 +27,7 @@ app.include_router(reports.router, prefix="/reports", tags=["reports"])
 app.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
 app.include_router(mailing_lists.router, prefix="/mailing-lists", tags=["mailing-lists"])
 app.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
+app.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
 
 @app.get("/health", tags=["monitoring"])
 def health_check():
