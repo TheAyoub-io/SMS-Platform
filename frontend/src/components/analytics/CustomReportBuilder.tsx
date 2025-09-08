@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 
 const METRICS = [
   { id: 'delivery_rate', name: 'Delivery Rate' },
-  { id: 'total_cost', name: 'Total Cost' },
+  { id: 'total_contacts', name: 'Contact Lists' },
   { id: 'messages_sent', name: 'Messages Sent' },
 ];
 

@@ -24,7 +24,7 @@ const CampaignDetailPage: React.FC = () => {
 
       {campaign.statut === 'active' && <CampaignMonitor campaign={campaign} />}
 
-      {(campaign.statut === 'finished' || campaign.statut === 'completed') && <CampaignAnalytics campaign={campaign} />}
+      {(campaign.statut === 'finished' || campaign.statut === 'archived') && <CampaignAnalytics campaign={campaign} />}
     </div>
   );
 };
