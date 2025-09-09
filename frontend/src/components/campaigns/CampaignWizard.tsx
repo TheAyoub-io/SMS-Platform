@@ -3,8 +3,10 @@ import { X, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { useCreateCampaign, useUpdateCampaign } from '../../hooks/useCampaigns';
-import { useCreateMailingList } from '../../hooks/useMailingLists';
 import { useTemplates } from '../../hooks/useTemplates';
+import { useContacts } from '../../hooks/useContacts';
+import { createMailingList, addContactsToList } from '../../services/mailingListApi';
+import { useMutation } from 'react-query';
 
 import CampaignForm, { CampaignFormInputs } from './CampaignForm';
 import MailingListForm, { MailingListFormInputs } from '../mailing_lists/MailingListForm';
@@ -29,9 +31,14 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
 
   const createCampaignMutation = useCreateCampaign();
   const updateCampaignMutation = useUpdateCampaign();
-  const createMailingListMutation = useCreateMailingList();
+  
+  // Custom mailing list creation with contact addition
+  const createMailingListMutation = useMutation(createMailingList);
 
   const { data: templates, isLoading: isLoadingTemplates } = useTemplates();
+  
+  // Get all contacts to add to mailing list
+  const { data: contacts } = useContacts({}, { skip: 0, limit: 1000 });
 
   useEffect(() => {
     if (isOpen) {
@@ -169,7 +176,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
     );
   };
 
-  const handleStep3Submit = (data: MailingListFormInputs) => {
+  const handleStep3Submit = async (data: MailingListFormInputs) => {
     const campaignId = campaignIdRef.current || campaignData.id_campagne || createdCampaign?.id_campagne;
     
     if (!campaignId) {
@@ -177,10 +184,30 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
       setStep(1);
       return;
     }
+    
     const payload = { ...data, id_campagne: campaignId };
+    
     createMailingListMutation.mutate(payload, {
-      onSuccess: () => {
-        toast.success("Mailing list created successfully!");
+      onSuccess: async (createdMailingList) => {
+        // Add all available contacts to the mailing list
+        if (contacts && contacts.length > 0 && createdMailingList.id_liste) {
+          try {
+            const contactIds = contacts.map(contact => contact.id_contact);
+            const result = await addContactsToList(createdMailingList.id_liste, contactIds);
+            
+            if (result.success) {
+              toast.success(`Mailing list created with ${contacts.length} contacts!`);
+            } else {
+              toast.error("Mailing list created but failed to add contacts.");
+            }
+          } catch (error) {
+            console.error("Failed to add contacts to mailing list:", error);
+            toast.error("Mailing list created but failed to add contacts.");
+          }
+        } else {
+          toast.error("Mailing list created but no contacts available to add.");
+        }
+        
         handleNext();
       },
       onError: (error) => {
@@ -344,10 +371,16 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
                    return (
                      <>
                        <h3 className="font-medium mb-4 text-lg">4. Launch Campaign</h3>
-                       <CampaignLauncher 
-                         campaign={createdCampaign || campaignData} 
-                         onLaunch={onClose} 
-                       />
+                       {(() => {
+                         const campaignForLauncher = createdCampaign || campaignData;
+                         console.log('Campaign data being passed to launcher:', campaignForLauncher);
+                         return (
+                           <CampaignLauncher 
+                             campaign={campaignForLauncher} 
+                             onLaunch={onClose} 
+                           />
+                         );
+                       })()}
                      </>
                    );
                  })()}
@@ -366,28 +399,25 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
             Back
           </button>
 
-          {step < 4 && (
-            <>
-              {step !== 3 && (
-                 <button 
-                   onClick={step === 2 ? handleStep2Next : handleNext} 
-                   disabled={isNextButtonDisabled()} 
-                   className="flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors disabled:cursor-not-allowed"
-                 >
-                    {isLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        {getNextButtonText()}
-                      </>
-                    ) : (
-                      <>
-                        {getNextButtonText()}
-                        <ArrowRight size={16} className="ml-2" />
-                      </>
-                    )}
-                 </button>
+          {/* Show Next button for step 2 (template selection) */}
+          {step === 2 && (
+            <button 
+              onClick={handleStep2Next} 
+              disabled={isNextButtonDisabled()} 
+              className="flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {getNextButtonText()}
+                </>
+              ) : (
+                <>
+                  {getNextButtonText()}
+                  <ArrowRight size={16} className="ml-2" />
+                </>
               )}
-            </>
+            </button>
           )}
         </div>
       </div>

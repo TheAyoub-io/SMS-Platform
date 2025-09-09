@@ -18,8 +18,11 @@ def get_campaigns(db: Session, skip: int = 0, limit: int = 100):
 def update_campaign(db: Session, campaign_id: int, campaign: CampaignUpdate):
     db_campaign = get_campaign(db, campaign_id)
     if db_campaign:
-        for key, value in campaign.model_dump().items():
-            setattr(db_campaign, key, value)
+        # Only update fields that are provided (not None)
+        update_data = campaign.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            if value is not None:
+                setattr(db_campaign, key, value)
         db.commit()
         db.refresh(db_campaign)
     return db_campaign

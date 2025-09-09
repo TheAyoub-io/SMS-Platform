@@ -8,8 +8,10 @@ import {
   getCampaignStatus,
   getCampaign,
   pauseCampaign,
+  deleteCampaign,
   Campaign,
-  CampaignCreationPayload
+  CampaignCreationPayload,
+  CampaignUpdatePayload
 } from '../services/campaignApi';
 import toast from 'react-hot-toast';
 
@@ -61,11 +63,15 @@ export const useLaunchCampaign = () => {
     const queryClient = useQueryClient();
     return useMutation(launchCampaign, {
         onSuccess: (data) => {
+            console.log('Launch campaign success response:', data);
             queryClient.invalidateQueries(CAMPAIGNS_QUERY_KEY);
             toast.success(data.message || 'Campaign launched successfully!');
         },
-        onError: (error: Error) => {
-            toast.error(`Failed to launch campaign: ${error.message}`);
+        onError: (error: any) => {
+            console.error('Launch campaign error:', error);
+            console.error('Error response:', error.response?.data);
+            const errorMessage = error.response?.data?.detail || error.message || 'Unknown error occurred';
+            toast.error(`Failed to launch campaign: ${errorMessage}`);
         },
     });
 }
@@ -91,6 +97,21 @@ export const usePauseCampaign = () => {
         },
         onError: (error: Error) => {
             toast.error(`Failed to pause campaign: ${error.message}`);
+        },
+    });
+}
+
+export const useDeleteCampaign = () => {
+    const queryClient = useQueryClient();
+    return useMutation(deleteCampaign, {
+        onSuccess: (data) => {
+            queryClient.invalidateQueries(CAMPAIGNS_QUERY_KEY);
+            toast.success(data.message || 'Campaign deleted successfully!');
+        },
+        onError: (error: any) => {
+            console.error('Delete campaign error:', error);
+            const errorMessage = error.response?.data?.detail || error.message || 'Unknown error occurred';
+            toast.error(`Failed to delete campaign: ${errorMessage}`);
         },
     });
 }

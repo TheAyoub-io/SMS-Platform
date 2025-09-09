@@ -8,7 +8,7 @@ export interface Campaign {
   date_debut: string; // ISO 8601 date string
   date_fin: string;   // ISO 8601 date string
   statut: 'draft' | 'scheduled' | 'active' | 'paused' | 'finished' | 'archived';
-  type_campagne: string;
+  type_campagne: 'promotional' | 'informational' | 'follow_up';
   id_modele: number | null;
   created_at: string;
   updated_at: string;
@@ -25,7 +25,17 @@ export interface CampaignCreationPayload {
   date_debut: string;
   date_fin: string;
   statut: 'draft' | 'scheduled' | 'active' | 'paused' | 'finished' | 'archived';
-  type_campagne: string;
+  type_campagne: 'promotional' | 'informational' | 'follow_up';
+  id_modele?: number | null;
+}
+
+// For partial updates - all fields optional
+export interface CampaignUpdatePayload {
+  nom_campagne?: string;
+  date_debut?: string;
+  date_fin?: string;
+  statut?: 'draft' | 'scheduled' | 'active' | 'paused' | 'finished' | 'archived';
+  type_campagne?: 'promotional' | 'informational' | 'follow_up';
   id_modele?: number | null;
 }
 
@@ -34,7 +44,7 @@ export const createCampaign = async (campaignData: CampaignCreationPayload): Pro
   return response.data;
 };
 
-export const updateCampaign = async ({ id, payload }: { id: number, payload: Partial<CampaignCreationPayload> }): Promise<Campaign> => {
+export const updateCampaign = async ({ id, payload }: { id: number, payload: CampaignUpdatePayload }): Promise<Campaign> => {
   const response = await api.put<Campaign>(`/campaigns/${id}`, payload);
   return response.data;
 };
@@ -87,5 +97,10 @@ export const getCampaign = async (id: number): Promise<Campaign> => {
 
 export const pauseCampaign = async (id: number): Promise<Campaign> => {
   const response = await api.post<Campaign>(`/campaigns/${id}/pause`);
+  return response.data;
+}
+
+export const deleteCampaign = async (id: number): Promise<{ success: boolean; message: string }> => {
+  const response = await api.delete<{ success: boolean; message: string }>(`/campaigns/${id}`);
   return response.data;
 }
