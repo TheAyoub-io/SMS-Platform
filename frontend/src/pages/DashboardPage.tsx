@@ -91,11 +91,19 @@ const DashboardPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 rounded-lg shadow-lg">
+<<<<<<< HEAD
         <div className="px-6 py-8 text-white">
           <div>
             <h1 className="text-3xl font-bold mb-2">SMS Campaign Dashboard</h1>
             <p className="text-blue-100">Welcome back! Here's an overview of your SMS campaigns performance.</p>
             <div className="flex items-center mt-3 text-blue-200 text-sm">
+=======
+        <div className="px-6 py-8 text-white text-center">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Welcome to SMS Platform</h1>
+            <p className="text-blue-100">Welcome back! Here's an overview of your SMS campaigns performance.</p>
+            <div className="flex items-center justify-center mt-3 text-blue-200 text-sm">
+>>>>>>> 674b002f34af17b03aad57e9fd665c485341b30f
               <Activity className="h-4 w-4 mr-2" />
               <span>Last updated: {getTimeSinceUpdate()}</span>
               {isLoading && (
