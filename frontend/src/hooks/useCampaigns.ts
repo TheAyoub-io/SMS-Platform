@@ -23,12 +23,8 @@ export const useCampaigns = () => {
 export const useCreateCampaign = () => {
   const queryClient = useQueryClient();
   return useMutation(createCampaign, {
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(CAMPAIGNS_QUERY_KEY);
-      toast.success(`Campaign "${data.nom_campagne}" created as draft.`);
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to create campaign: ${error.message}`);
     },
   });
 };
@@ -36,12 +32,8 @@ export const useCreateCampaign = () => {
 export const useUpdateCampaign = () => {
   const queryClient = useQueryClient();
   return useMutation(updateCampaign, {
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(CAMPAIGNS_QUERY_KEY);
-      toast.success(`Campaign "${data.nom_campagne}" updated.`);
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to update campaign: ${error.message}`);
     },
   });
 };
