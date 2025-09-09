@@ -1,0 +1,58 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+.venv/
+venv/
+ENV/
+
+# Ignore node modules
+frontend/node_modules/
+
+# Ignore build output
+frontend/dist/
+
+# Ignore git
+.git/
+
+# Ignore Docker files
+*.log
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore other large folders
+monitoring/
+nginx/
+scripts/
+
+# Ignore CSV and other data files
+*.csv
+*.json
+*.ipynb
+
+# Ignore backup files
+*.bak
+*.tmp
+
+# Ignore IDE and editor folders
+.vscode/
+.idea/
+__MACOSX/
+
+# Ignore test and migration caches
+alembic/versions/__pycache__/
+app/__pycache__/
+tests/**/__pycache__/
+
+# Ignore all .env files
+.env
+*.env
+
+# Ignore all markdown and doc files
+*.md
+*.docx

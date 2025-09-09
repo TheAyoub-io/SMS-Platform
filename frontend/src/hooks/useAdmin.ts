@@ -27,7 +27,9 @@ export const useCreateUser = () => {
       queryClient.invalidateQueries(USERS_QUERY_KEY);
       toast.success('User created successfully!');
     },
-    onError: (error: Error) => toast.error(`Failed to create user: ${error.message}`),
+    onError: (error: Error) => {
+      toast.error(`Failed to create user: ${error.message}`);
+    },
   });
 };
 
@@ -38,7 +40,9 @@ export const useUpdateUser = () => {
       queryClient.invalidateQueries(USERS_QUERY_KEY);
       toast.success('User updated successfully!');
     },
-    onError: (error: Error) => toast.error(`Failed to update user: ${error.message}`),
+    onError: (error: Error) => {
+      toast.error(`Failed to update user: ${error.message}`);
+    },
   });
 };
 
@@ -49,7 +53,9 @@ export const useDeleteUser = () => {
       queryClient.invalidateQueries(USERS_QUERY_KEY);
       toast.success('User deleted successfully!');
     },
-    onError: (error: Error) => toast.error(`Failed to delete user: ${error.message}`),
+    onError: (error: Error) => {
+      toast.error(`Failed to delete user: ${error.message}`);
+    },
   });
 };
 

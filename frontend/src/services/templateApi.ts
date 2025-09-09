@@ -2,8 +2,8 @@ import api from './api';
 
 export interface Template {
   id_modele: number;
-  nom_modele: str;
-  contenu_modele: str;
+  nom_modele: string;
+  contenu_modele: string;
   variables: Record<string, string> | null;
   created_by: number;
 }
@@ -26,4 +26,8 @@ export const createTemplate = async (payload: TemplatePayload): Promise<Template
 export const updateTemplate = async ({ id, payload }: { id: number, payload: TemplatePayload }): Promise<Template> => {
   const response = await api.put<Template>(`/templates/${id}`, payload);
   return response.data;
+};
+
+export const deleteTemplate = async (id: number): Promise<void> => {
+  await api.delete(`/templates/${id}`);
 };

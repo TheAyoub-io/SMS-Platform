@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { LogOut, LayoutDashboard, MessageSquare, List, Settings, Users, FileText, Monitor, BarChart2 } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
+import { LogOut, LayoutDashboard, MessageSquare, List, Settings, Users, FileText, Monitor, BarChart2, UserCheck, Sun, Moon, Palette } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 interface LayoutProps {
@@ -25,6 +26,14 @@ const NavItem = ({ to, icon, children }: { to: string, icon: React.ReactNode, ch
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
+  const { theme, setTheme, effectiveTheme } = useTheme();
+
+  const cycleTheme = () => {
+    const themes: Array<'light' | 'dark' | 'system'> = ['light', 'dark', 'system'];
+    const currentIndex = themes.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex]);
+  };
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -38,6 +47,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <NavItem to="/campaigns" icon={<MessageSquare size={20} />}>Campaigns</NavItem>
           <NavItem to="/analytics" icon={<BarChart2 size={20} />}>Analytics</NavItem>
           <NavItem to="/contacts" icon={<Users size={20} />}>Contacts</NavItem>
+          <NavItem to="/contact-lists" icon={<UserCheck size={20} />}>Contact Lists</NavItem>
           <NavItem to="/templates" icon={<FileText size={20} />}>Templates</NavItem>
           <NavItem to="/mailing-lists" icon={<List size={20} />}>Mailing Lists</NavItem>
           {/* Add more navigation items here */}
@@ -59,6 +69,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <h1 className="text-lg font-semibold">Dashboard</h1>
           </div>
           <div className="flex items-center space-x-4">
+            <button
+              onClick={cycleTheme}
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title={`Current theme: ${theme} (click to cycle)`}
+            >
+              {effectiveTheme === 'dark' ? (
+                <Moon size={20} className="text-blue-500" />
+              ) : (
+                <Sun size={20} className="text-orange-500" />
+              )}
+            </button>
             {user && (
               <div className="text-right">
                 <p className="font-semibold text-sm">{user.nom_agent}</p>
