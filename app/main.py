@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints import auth, campaigns, contacts, templates, messages, reports, users, webhooks, mailing_lists, tasks, analytics, admin
 from app.core.logging import setup_logging
 from app.core.monitoring import get_application_health
+from app.core.config import settings
 
 setup_logging()
 
@@ -11,10 +12,10 @@ app = FastAPI()
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])

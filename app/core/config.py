@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
 
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
+    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
     REDIS_URL: str = "redis://localhost:6379"
     MAX_FILE_SIZE: int = 10485760
     UPLOAD_DIRECTORY: str = "./uploads"
