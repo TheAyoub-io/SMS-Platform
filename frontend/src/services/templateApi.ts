@@ -2,8 +2,8 @@ import api from './api';
 
 export interface Template {
   id_modele: number;
-  nom_modele: str;
-  contenu_modele: str;
+  nom_modele: string;
+  contenu_modele: string;
   variables: Record<string, string> | null;
   created_by: number;
 }
