@@ -25,14 +25,17 @@ export const useCampaigns = () => {
 export const useCreateCampaign = () => {
   const queryClient = useQueryClient();
   return useMutation(createCampaign, {
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(CAMPAIGNS_QUERY_KEY);
+ fix/campaign-wizard-bug
+      
       // Remove toast here to avoid conflicts with component-level toasts
       console.log('useCreateCampaign success:', data);
     },
     onError: (error: Error) => {
       console.error('useCreateCampaign error:', error);
       toast.error(`Failed to create campaign: ${error.message}`);
+ master
     },
   });
 };
@@ -40,14 +43,17 @@ export const useCreateCampaign = () => {
 export const useUpdateCampaign = () => {
   const queryClient = useQueryClient();
   return useMutation(updateCampaign, {
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(CAMPAIGNS_QUERY_KEY);
+ fix/campaign-wizard-bug
+
       console.log('useUpdateCampaign success:', data);
       // Remove toast here to avoid conflicts with component-level toasts
     },
     onError: (error: Error) => {
       console.error('useUpdateCampaign error:', error);
       toast.error(`Failed to update campaign: ${error.message}`);
+master
     },
   });
 };

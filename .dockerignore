@@ -1,3 +1,42 @@
+ fix/campaign-wizard-bug
+# Git
+/.git
+/.gitignore
+
+# Docker
+/Dockerfile
+/docker-compose.yml
+
+# Python
+/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+/.Python
+/env/
+/venv/
+/pip-cache/
+/.tox/
+/.pytest_cache/
+/*.egg-info/
+/dist/
+/build/
+
+# Node
+/frontend/node_modules/
+/frontend/build/
+/frontend/dist/
+/.DS_Store
+/npm-debug.log*
+/yarn-debug.log*
+/yarn-error.log*
+
+# Other
+/.idea/
+/.vscode/
+/*.swp
+/test.db
+=======
 # Ignore Python cache
 __pycache__/
 *.pyc
@@ -54,5 +93,4 @@ tests/**/__pycache__/
 *.env
 
 # Ignore all markdown and doc files
-*.md
-*.docx
+*.mmaster

@@ -97,6 +97,15 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
     
     createCampaignMutation.mutate(payload, {
       onSuccess: (createdCampaign) => {
+ fix/campaign-wizard-bug
+        toast.success(`Campaign "${createdCampaign.nom_campagne}" created as draft.`);
+        setCampaignData(createdCampaign);
+        handleNext();
+      },
+      onError: (error: Error) => {
+        toast.error(`Failed to create campaign: ${error.message}`);
+      },
+
         console.log('Campaign created successfully:', createdCampaign);
         
         // Ensure we have the campaign ID before proceeding
@@ -131,6 +140,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
         console.error('Campaign creation failed:', error);
         toast.error("Failed to create campaign. Please try again.");
       }
+ master
     });
   };
 
@@ -158,6 +168,17 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
     }
     
     updateCampaignMutation.mutate(
+ fix/campaign-wizard-bug
+      { id: campaignData.id_campagne, payload: { id_modele: campaignData.id_modele } },
+      {
+        onSuccess: (updatedCampaign) => {
+          toast.success(`Campaign "${updatedCampaign.nom_campagne}" updated.`);
+          handleNext();
+        },
+        onError: (error: Error) => {
+          toast.error(`Failed to update campaign: ${error.message}`);
+        },
+
       { id: campaignId, payload: { id_modele: templateId } },
       { 
         onSuccess: (updatedCampaign) => {
@@ -172,6 +193,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
         onError: (error) => {
           toast.error("Failed to assign template. Please try again.");
         }
+        master
       }
     );
   };
@@ -256,6 +278,36 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
             <X size={24} className="text-gray-500 dark:text-gray-400" />
           </button>
         </div>
+
+ fix/campaign-wizard-bug
+        <div className="p-6 flex-1 overflow-y-auto">
+          {/* Progress Bar Placeholder */}
+
+          {step === 1 && <CampaignForm onSubmit={handleStep1Submit} isSubmitting={createCampaignMutation.isLoading} />}
+          {step === 2 && (
+              <div>
+                <h3 className="font-medium mb-4 text-lg">2. Choose Template</h3>
+                {isLoadingTemplates ? <p>Loading templates...</p> : (
+                  <select
+                    className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                    onChange={(e) => setCampaignData(prev => ({ ...prev, id_modele: parseInt(e.target.value) }))}
+                    value={campaignData.id_modele || ''}
+                  >
+                    <option value="">Select a template</option>
+                    {templates?.map(t => <option key={t.id_modele} value={t.id_modele}>{t.nom_modele}</option>)}
+                  </select>
+                )}
+              </div>
+          )}
+          {step === 3 && (
+              <div>
+                <h3 className="font-medium mb-4 text-lg">3. Create a Mailing List</h3>
+                <MailingListForm onSubmit={handleStep3Submit} isSubmitting={createMailingListMutation.isLoading} />
+              </div>
+          )}
+          {step === 4 && (
+              <CampaignLauncher campaign={campaignData} onLaunch={onClose} />
+          )}
 
         <div className="p-6 flex-1 overflow-y-auto">{/* Progress Bar */}
         <div className="mb-6">
@@ -386,6 +438,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
                  })()}
                </div>
            )}
+ master
         </div>
 
         {/* Footer */}
