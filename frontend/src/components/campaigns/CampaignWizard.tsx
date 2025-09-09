@@ -49,8 +49,12 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
     };
     createCampaignMutation.mutate(payload, {
       onSuccess: (createdCampaign) => {
+        toast.success(`Campaign "${createdCampaign.nom_campagne}" created as draft.`);
         setCampaignData(createdCampaign);
         handleNext();
+      },
+      onError: (error: Error) => {
+        toast.error(`Failed to create campaign: ${error.message}`);
       },
     });
   };
@@ -62,7 +66,15 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
     }
     updateCampaignMutation.mutate(
       { id: campaignData.id_campagne, payload: { id_modele: campaignData.id_modele } },
-      { onSuccess: handleNext }
+      {
+        onSuccess: (updatedCampaign) => {
+          toast.success(`Campaign "${updatedCampaign.nom_campagne}" updated.`);
+          handleNext();
+        },
+        onError: (error: Error) => {
+          toast.error(`Failed to update campaign: ${error.message}`);
+        },
+      }
     );
   };
 
@@ -92,34 +104,33 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="p-6 flex-1 overflow-y-auto">
-           {/* Progress Bar Placeholder */}
-        </div>
+          {/* Progress Bar Placeholder */}
 
-        {step === 1 && <CampaignForm onSubmit={handleStep1Submit} isSubmitting={createCampaignMutation.isLoading} />}
-        {step === 2 && (
-            <div>
-              <h3 className="font-medium mb-4 text-lg">2. Choose Template</h3>
-              {isLoadingTemplates ? <p>Loading templates...</p> : (
-                <select
-                  className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
-                  onChange={(e) => setCampaignData(prev => ({ ...prev, id_modele: parseInt(e.target.value) }))}
-                  value={campaignData.id_modele || ''}
-                >
-                  <option value="">Select a template</option>
-                  {templates?.map(t => <option key={t.id_modele} value={t.id_modele}>{t.nom_modele}</option>)}
-                </select>
-              )}
-            </div>
-        )}
-        {step === 3 && (
-            <div>
-              <h3 className="font-medium mb-4 text-lg">3. Create a Mailing List</h3>
-              <MailingListForm onSubmit={handleStep3Submit} isSubmitting={createMailingListMutation.isLoading} />
-            </div>
-        )}
-        {step === 4 && (
-            <CampaignLauncher campaign={campaignData} onLaunch={onClose} />
-        )}
+          {step === 1 && <CampaignForm onSubmit={handleStep1Submit} isSubmitting={createCampaignMutation.isLoading} />}
+          {step === 2 && (
+              <div>
+                <h3 className="font-medium mb-4 text-lg">2. Choose Template</h3>
+                {isLoadingTemplates ? <p>Loading templates...</p> : (
+                  <select
+                    className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                    onChange={(e) => setCampaignData(prev => ({ ...prev, id_modele: parseInt(e.target.value) }))}
+                    value={campaignData.id_modele || ''}
+                  >
+                    <option value="">Select a template</option>
+                    {templates?.map(t => <option key={t.id_modele} value={t.id_modele}>{t.nom_modele}</option>)}
+                  </select>
+                )}
+              </div>
+          )}
+          {step === 3 && (
+              <div>
+                <h3 className="font-medium mb-4 text-lg">3. Create a Mailing List</h3>
+                <MailingListForm onSubmit={handleStep3Submit} isSubmitting={createMailingListMutation.isLoading} />
+              </div>
+          )}
+          {step === 4 && (
+              <CampaignLauncher campaign={campaignData} onLaunch={onClose} />
+          )}
         </div>
 
         <div className="flex justify-between items-center p-4 border-t dark:border-gray-700">
