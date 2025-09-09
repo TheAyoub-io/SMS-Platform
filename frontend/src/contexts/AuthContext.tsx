@@ -45,16 +45,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     };
 
-    // Add a timeout to prevent hanging
-    const timeoutId = setTimeout(() => {
-      setIsLoading(false);
-    }, 5000); // 5 second timeout
-
-    validateToken().finally(() => {
-      clearTimeout(timeoutId);
-    });
-
-    return () => clearTimeout(timeoutId);
+    validateToken();
   }, [token]); // Rerun when token changes
 
   const login = async (credentials: LoginCredentials) => {

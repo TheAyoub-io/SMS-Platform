@@ -79,7 +79,7 @@ def process_sms_batch():
         for item in pending_items:
             try:
                 # Construct callback URL
-                callback_url = f"http://localhost:8000/api/v1/sms-webhooks/twilio-status" # Placeholder URL
+                callback_url = f"{settings.BASE_URL}/api/v1/sms-webhooks/twilio-status"
 
                 response = provider.send_sms(
                     to_number=item.contact.numero_telephone,

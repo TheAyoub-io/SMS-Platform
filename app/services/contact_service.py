@@ -22,19 +22,7 @@ def get_contact(db: Session, contact_id: int):
 def get_contacts(db: Session, filters: dict, skip: int = 0, limit: int = 100):
     query = db.query(Contact)
 
-    # Apply search filter
-    if "search" in filters and filters["search"]:
-        search_term = f"%{filters['search']}%"
-        query = query.filter(
-            (Contact.prenom.ilike(search_term)) |
-            (Contact.nom.ilike(search_term)) |
-            (Contact.numero_telephone.ilike(search_term)) |
-            (Contact.email.ilike(search_term))
-        )
-    
-    # Apply other filters dynamically
-    if "type_client" in filters:
-        query = query.filter(Contact.type_client == filters["type_client"])
+    # Apply filters dynamically
     if "segments" in filters and filters["segments"]:
         query = query.filter(Contact.segment.in_(filters["segments"]))
     if "zone_geographique" in filters:
@@ -64,35 +52,29 @@ def import_contacts_from_file(db: Session, file: UploadFile):
     try:
         content = file.file.read()
 
-        # Check if the file has already been mapped (contains model field names)
-        # or if it needs mapping from standard column names
+        column_mapping = {
+            'FirstName': 'prenom', 'LastName': 'nom', 'PhoneNumber': 'numero_telephone',
+            'Email': 'email', 'OptInStatus': 'statut_opt_in', 'Segment': 'segment',
+            'Zone': 'zone_geographique', 'ClientType': 'type_client'
+        }
+        string_columns = [
+            'FirstName', 'LastName', 'PhoneNumber', 'Email',
+            'Segment', 'Zone', 'ClientType'
+        ]
+        dtype_mapping = {col: str for col in string_columns}
+
         if file.filename.endswith('.csv'):
-            df = pd.read_csv(io.StringIO(content.decode('utf-8')))
+            df = pd.read_csv(io.StringIO(content.decode('utf-8')), dtype=dtype_mapping)
         elif file.filename.endswith(('.xls', '.xlsx')):
-            df = pd.read_excel(io.BytesIO(content))
+            df = pd.read_excel(io.BytesIO(content), dtype=dtype_mapping)
         else:
             return {"error": "Unsupported file format. Please use CSV or Excel."}
 
-        # Check if the file has already been mapped by the frontend
-        model_fields = set(ContactCreate.model_fields.keys())
-        file_columns = set(df.columns)
-        
-        # If the file contains model field names, it's already mapped
-        if model_fields.intersection(file_columns):
-            # File is already mapped, use as-is
-            pass
-        else:
-            # File needs mapping from standard column names
-            column_mapping = {
-                'FirstName': 'prenom', 'LastName': 'nom', 'PhoneNumber': 'numero_telephone',
-                'Email': 'email', 'OptInStatus': 'statut_opt_in', 'Segment': 'segment',
-                'Zone': 'zone_geographique', 'ClientType': 'type_client'
-            }
-            df.rename(columns=column_mapping, inplace=True)
+        df.rename(columns=column_mapping, inplace=True)
 
         contacts_to_create = []
         errors = []
-        valid_model_fields = set(ContactCreate.model_fields.keys())
+        model_fields = ContactCreate.model_fields.keys()
 
         for index, row in df.iterrows():
             try:
@@ -100,7 +82,7 @@ def import_contacts_from_file(db: Session, file: UploadFile):
                 contact_dict_cleaned = {k: v for k, v in contact_dict.items() if pd.notna(v)}
 
                 # Filter dict to only include keys that are valid for the Pydantic model
-                filtered_dict = {k: v for k, v in contact_dict_cleaned.items() if k in valid_model_fields}
+                filtered_dict = {k: v for k, v in contact_dict_cleaned.items() if k in model_fields}
 
                 contact_data = ContactCreate(**filtered_dict)
                 contacts_to_create.append(contact_data.model_dump())

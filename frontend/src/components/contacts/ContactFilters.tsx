@@ -1,4 +1,5 @@
 import React from 'react';
+import { useContactSegments } from '../../hooks/useContacts';
 import { ContactFilters as IContactFilters } from '../../services/contactApi';
 
 interface ContactFiltersProps {
@@ -7,21 +8,18 @@ interface ContactFiltersProps {
 }
 
 const ContactFilters: React.FC<ContactFiltersProps> = ({ filters, onFilterChange }) => {
+  const { data: segments, isLoading: isLoadingSegments } = useContactSegments();
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     onFilterChange({ ...filters, [name]: value });
   };
 
-  // Contact type options - same as in ContactForm
-  const contactTypes = [
-    { value: '', label: 'All Contact Types' },
-    { value: 'individual', label: 'Individual' },
-    { value: 'business', label: 'Business' },
-    { value: 'lead', label: 'Lead' },
-    { value: 'customer', label: 'Customer' },
-    { value: 'partner', label: 'Partner' },
-    { value: 'vendor', label: 'Vendor' },
-  ];
+  const handleSegmentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    // For multi-select, you would handle an array. Here we assume single select for simplicity.
+    onFilterChange({ ...filters, segments: value ? [value] : [] });
+  }
 
   return (
     <div className="space-y-4">
@@ -30,41 +28,43 @@ const ContactFilters: React.FC<ContactFiltersProps> = ({ filters, onFilterChange
         <input
           type="text"
           id="search"
-          name="search"
-          value={filters.search || ''}
-          placeholder="Search by name, email, phone..."
+          name="search" // Will need to add search logic based on this
+          placeholder="By name, email, phone..."
           onChange={handleInputChange}
           className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md"
         />
       </div>
       <div>
-        <label htmlFor="type_client" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Type</label>
+        <label htmlFor="statut_opt_in" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Opt-In Status</label>
         <select
-          id="type_client"
-          name="type_client"
-          value={filters.type_client || ''}
+          id="statut_opt_in"
+          name="statut_opt_in"
+          value={filters.statut_opt_in === undefined ? '' : String(filters.statut_opt_in)}
           onChange={handleInputChange}
           className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md"
         >
-          {contactTypes.map((type) => (
-            <option key={type.value} value={type.value}>
-              {type.label}
-            </option>
-          ))}
+          <option value="">All</option>
+          <option value="true">Opted-In</option>
+          <option value="false">Opted-Out</option>
         </select>
       </div>
       <div>
-        <label htmlFor="zone_geographique" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Geographic Zone</label>
-        <input
-          type="text"
-          id="zone_geographique"
-          name="zone_geographique"
-          value={filters.zone_geographique || ''}
-          placeholder="Filter by zone..."
-          onChange={handleInputChange}
+        <label htmlFor="segments" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Segment</label>
+        <select
+          id="segments"
+          name="segments"
+          value={filters.segments?.[0] || ''}
+          onChange={handleSegmentChange}
+          disabled={isLoadingSegments}
           className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md"
-        />
+        >
+          <option value="">All Segments</option>
+          {segments?.map(segment => (
+            <option key={segment} value={segment}>{segment}</option>
+          ))}
+        </select>
       </div>
+      {/* Add more filters for zone, etc. later */}
     </div>
   );
 };

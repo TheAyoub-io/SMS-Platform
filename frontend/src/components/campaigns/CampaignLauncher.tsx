@@ -9,10 +9,7 @@ interface CampaignLauncherProps {
 }
 
 const CampaignLauncher: React.FC<CampaignLauncherProps> = ({ campaign, onLaunch }) => {
-  console.log('CampaignLauncher received campaign:', campaign);
-  
   if (!campaign.id_campagne) {
-    console.error('Campaign ID is missing:', campaign);
     return <p className="text-red-500">Campaign ID is missing. Cannot proceed.</p>;
   }
 
@@ -20,14 +17,9 @@ const CampaignLauncher: React.FC<CampaignLauncherProps> = ({ campaign, onLaunch 
   const launchMutation = useLaunchCampaign();
 
   const handleLaunch = () => {
-    console.log('Attempting to launch campaign:', campaign.id_campagne);
     launchMutation.mutate(campaign.id_campagne!, {
-      onSuccess: (data) => {
-        console.log('Campaign launch successful:', data);
+      onSuccess: () => {
         onLaunch(); // This will close the wizard
-      },
-      onError: (error) => {
-        console.error('Campaign launch failed:', error);
       }
     });
   };

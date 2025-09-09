@@ -1,11 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import {
   getContacts,
+  getContactSegments,
   createContact,
   updateContact,
-  deleteContact,
   bulkUpdateOptStatus,
-  importContacts,
   Contact,
   ContactFilters,
   Pagination
@@ -14,6 +13,7 @@ import toast from 'react-hot-toast';
 
 
 const CONTACTS_QUERY_KEY = 'contacts';
+const CONTACT_SEGMENTS_QUERY_KEY = 'contactSegments';
 
 export const useContacts = (filters: ContactFilters, pagination: Pagination) => {
   return useQuery<Contact[], Error>(
@@ -23,6 +23,10 @@ export const useContacts = (filters: ContactFilters, pagination: Pagination) => 
       keepPreviousData: true,
     }
   );
+};
+
+export const useContactSegments = () => {
+  return useQuery<string[], Error>(CONTACT_SEGMENTS_QUERY_KEY, getContactSegments);
 };
 
 export const useCreateContact = () => {
@@ -51,19 +55,6 @@ export const useUpdateContact = () => {
   });
 };
 
-export const useDeleteContact = () => {
-  const queryClient = useQueryClient();
-  return useMutation(deleteContact, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(CONTACTS_QUERY_KEY);
-      toast.success('Contact deleted successfully!');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to delete contact: ${error.message}`);
-    }
-  });
-};
-
 export const useBulkUpdateOptStatus = () => {
   const queryClient = useQueryClient();
   return useMutation(bulkUpdateOptStatus, {
@@ -73,31 +64,6 @@ export const useBulkUpdateOptStatus = () => {
     },
     onError: (error: Error) => {
       toast.error(`Failed to update contacts: ${error.message}`);
-    }
-  });
-};
-
-export const useImportContacts = () => {
-  const queryClient = useQueryClient();
-  return useMutation(importContacts, {
-    onSuccess: (data) => {
-      queryClient.invalidateQueries(CONTACTS_QUERY_KEY);
-      // Don't show toast here, let the component handle it based on the result
-    },
-    onError: (error: any) => {
-      console.error('Import error:', error);
-      
-      // Extract meaningful error message
-      let errorMessage = 'Failed to import contacts';
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      toast.error(errorMessage);
     }
   });
 };
