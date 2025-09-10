@@ -1,5 +1,7 @@
 from app.core.celery_app import celery_app
 from celery.result import AsyncResult
+from app.db.models import SMSQueue
+from sqlalchemy.orm import Session
 
 class QueueService:
     @staticmethod
@@ -50,3 +52,10 @@ class QueueService:
             "status": result.status,
             "info": result.info, # Custom state information
         }
+
+    @staticmethod
+    def get_sms_queue_items(db: Session, skip: int = 0, limit: int = 100):
+        """
+        Gets items from the sms_queue table with pagination.
+        """
+        return db.query(SMSQueue).order_by(SMSQueue.created_at.desc()).offset(skip).limit(limit).all()

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useCampaign } from '../hooks/useCampaigns';
 import CampaignMonitor from '../components/campaigns/CampaignMonitor';
 import CampaignAnalytics from '../components/campaigns/CampaignAnalytics';
+import MessageLogTable from '../components/campaigns/MessageLogTable';
 
 const CampaignDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,11 @@ const CampaignDetailPage: React.FC = () => {
       {campaign.statut === 'active' && <CampaignMonitor campaign={campaign} />}
 
       {(campaign.statut === 'finished' || campaign.statut === 'completed') && <CampaignAnalytics campaign={campaign} />}
+
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Message Logs</h2>
+        <MessageLogTable campaignId={campaignId} />
+      </div>
     </div>
   );
 };
