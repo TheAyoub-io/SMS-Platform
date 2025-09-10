@@ -18,14 +18,10 @@ const TemplateEditor = forwardRef<TemplateEditorHandles>((props, ref) => {
   useImperativeHandle(ref, () => ({
     getTemplateData: () => {
       if (!name.trim()) {
-        alert("Please enter a template name.");
+        alert("Template name is required.");
         return null;
       }
-      if (!content.trim()) {
-        alert("Please enter message content.");
-        return null;
-      }
-      return { nom_modele: name.trim(), contenu_modele: content.trim() };
+      return { nom_modele: name, contenu_modele: content };
     }
   }));
 
@@ -51,61 +47,33 @@ const TemplateEditor = forwardRef<TemplateEditorHandles>((props, ref) => {
   const segments = Math.ceil(charCount / limit) || 1;
 
   return (
-    <div className="space-y-6">
-      {/* Template Name Section */}
-      <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-        <label htmlFor="template_name" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Template Name *
-        </label>
+    <div className="space-y-4">
+      <div>
+        <label htmlFor="template_name" className="block text-sm font-medium">Template Name</label>
         <input
           type="text"
           id="template_name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
-          placeholder="Enter a descriptive name for your template"
-          required
+          className="w-full p-2 mt-1 border rounded-md"
         />
-        <p className="text-xs text-gray-500 mt-1">Choose a name that helps you identify this template later</p>
       </div>
-
-      {/* Message Content Section */}
-      <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Message Content *
-        </label>
-        
-        {/* Variable Inserter */}
-        <div className="mb-3">
-          <VariableInserter onInsert={handleInsertVariable} />
-        </div>
-        
-        {/* Text Area */}
+      <div>
+        <label className="block text-sm font-medium">Message Content</label>
+        <VariableInserter onInsert={handleInsertVariable} />
         <textarea
           ref={textAreaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          rows={8}
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm dark:bg-gray-800 dark:text-white resize-none"
-          placeholder="Type your SMS message here... You can use variables like {nom} for personalization."
-          required
+          rows={6}
+          className="w-full p-2 mt-1 border rounded-md font-mono"
+          placeholder="Type your message here..."
         />
-        
-        {/* Character Count */}
-        <div className="flex justify-between items-center mt-2">
-          <div className="text-xs text-gray-500">
-            Use variables like {"{nom}"}, {"{prenom}"} to personalize messages
-          </div>
-          <div className={`text-sm font-medium ${charCount > limit ? 'text-red-600' : 'text-gray-600'}`}>
-            {charCount} / {limit} characters | {segments} SMS
-          </div>
+        <div className="text-right text-sm text-gray-500">
+          {charCount} / {limit * segments} characters | {segments} SMS
         </div>
       </div>
-
-      {/* Validation */}
       <TemplateValidator content={content} />
-      
-      {/* Preview */}
       <TemplatePreview templateContent={content} />
     </div>
   );

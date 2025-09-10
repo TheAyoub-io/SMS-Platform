@@ -27,7 +27,3 @@ export const updateTemplate = async ({ id, payload }: { id: number, payload: Tem
   const response = await api.put<Template>(`/templates/${id}`, payload);
   return response.data;
 };
-
-export const deleteTemplate = async (id: number): Promise<void> => {
-  await api.delete(`/templates/${id}`);
-};

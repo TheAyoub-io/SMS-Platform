@@ -1,9 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any
-import warnings
-
-# Suppress the specific bcrypt version warning
-warnings.filterwarnings("ignore", message=".*error reading bcrypt version.*")
 
 from jose import jwt, JWTError
 from passlib.context import CryptContext
@@ -21,7 +17,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ALGORITHM = "HS256"
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def create_access_token(
     subject: str | Any, expires_delta: timedelta | None = None
@@ -64,7 +60,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 def get_current_active_admin(current_user: models.Agent = Depends(get_current_user)):
-    if current_user.role.lower() not in ["admin", "supervisor"]:
+    if current_user.role != "admin":
         raise HTTPException(
             status_code=403, detail="The user doesn't have enough privileges"
         )

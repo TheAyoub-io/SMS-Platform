@@ -16,9 +16,9 @@ export interface Contact {
 }
 
 export interface ContactFilters {
-  search?: string;
-  type_client?: string;
+  segments?: string[];
   zone_geographique?: string;
+  statut_opt_in?: boolean;
 }
 
 export interface Pagination {
@@ -32,25 +32,24 @@ export const getContacts = async ({ filters, pagination }: { filters: ContactFil
   if (pagination.skip) params.append('skip', pagination.skip.toString());
   if (pagination.limit) params.append('limit', pagination.limit.toString());
 
-  if (filters.search) {
-    params.append('search', filters.search);
-  }
-  if (filters.type_client) {
-    params.append('type_client', filters.type_client);
+  if (filters.segments && filters.segments.length > 0) {
+    params.append('segments', filters.segments.join(','));
   }
   if (filters.zone_geographique) {
     params.append('zone_geographique', filters.zone_geographique);
+  }
+  if (filters.statut_opt_in !== undefined) {
+    params.append('statut_opt_in', String(filters.statut_opt_in));
   }
 
   const response = await api.get<Contact[]>('/contacts/', { params });
   return response.data;
 };
 
-// Remove the getContactSegments function since we're no longer using segments
-// export const getContactSegments = async (): Promise<string[]> => {
-//   const response = await api.get<string[]>('/contacts/segments');
-//   return response.data;
-// };
+export const getContactSegments = async (): Promise<string[]> => {
+  const response = await api.get<string[]>('/contacts/segments');
+  return response.data;
+};
 
 export const createContact = async (payload: ContactFormInputs): Promise<Contact> => {
     const response = await api.post<Contact>('/contacts/', payload);
@@ -62,10 +61,6 @@ export const updateContact = async ({ id, payload }: { id: number, payload: Cont
     return response.data;
 }
 
-export const deleteContact = async (id: number): Promise<void> => {
-    await api.delete(`/contacts/${id}`);
-}
-
 export interface BulkOptInPayload {
     contact_ids: number[];
     opt_in_status: boolean;
@@ -73,29 +68,5 @@ export interface BulkOptInPayload {
 
 export const bulkUpdateOptStatus = async (payload: BulkOptInPayload): Promise<{ message: string }> => {
     const response = await api.post<{ message: string }>('/contacts/bulk-opt-status', payload);
-    return response.data;
-}
-
-export interface ImportContactsResponse {
-    message: string;
-    errors?: Array<{
-        row: number;
-        errors: Array<{
-            loc: string[];
-            msg: string;
-            type: string;
-        }>;
-    }>;
-}
-
-export const importContacts = async (file: File): Promise<ImportContactsResponse> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const response = await api.post<ImportContactsResponse>('/contacts/import', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
     return response.data;
 }

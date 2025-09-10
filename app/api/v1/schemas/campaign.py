@@ -1,25 +1,20 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
-from typing import Optional, Literal
+from typing import Optional
 
 class CampaignBase(BaseModel):
     nom_campagne: str
     date_debut: datetime
     date_fin: datetime
-    statut: Literal['draft', 'scheduled', 'active', 'completed', 'paused']
-    type_campagne: Literal['promotional', 'informational', 'follow_up']
+    statut: str
+    type_campagne: str
     id_modele: Optional[int] = None
 
 class CampaignCreate(CampaignBase):
     pass
 
-class CampaignUpdate(BaseModel):
-    nom_campagne: Optional[str] = None
-    date_debut: Optional[datetime] = None
-    date_fin: Optional[datetime] = None
-    statut: Optional[Literal['draft', 'scheduled', 'active', 'completed', 'paused']] = None
-    type_campagne: Optional[Literal['promotional', 'informational', 'follow_up']] = None
-    id_modele: Optional[int] = None
+class CampaignUpdate(CampaignBase):
+    pass
 
 class CampaignInDBBase(CampaignBase):
     id_campagne: int

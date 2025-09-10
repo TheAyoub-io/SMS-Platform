@@ -12,7 +12,7 @@ const COLORS = ['#16a34a', '#dc2626']; // Green for delivered, Red for failed
 const CampaignAnalytics: React.FC<CampaignAnalyticsProps> = ({ campaign }) => {
   // For now, we use the same status hook. A real app might have a different, more detailed report endpoint.
   const { data: status, isLoading, isError } = useCampaignStatus(campaign.id_campagne, {
-    enabled: campaign.statut === 'finished' || campaign.statut === 'archived',
+    enabled: campaign.statut === 'finished' || campaign.statut === 'completed',
   });
 
   if (isLoading) return <p>Loading analytics...</p>;

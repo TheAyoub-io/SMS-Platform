@@ -1,16 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import CampaignList from '../components/campaigns/CampaignList';
 import CampaignWizard from '../components/campaigns/CampaignWizard';
-import EditCampaignModal from '../components/campaigns/EditCampaignModal';
 import { useCampaigns } from '../hooks/useCampaigns';
-import { Campaign } from '../services/campaignApi';
 import { Plus, Search } from 'lucide-react';
 
 const CampaignsPage: React.FC = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
 
   const { data: campaigns, isLoading, isError } = useCampaigns();
 
@@ -22,10 +19,6 @@ const CampaignsPage: React.FC = () => {
       return matchesSearch && matchesStatus;
     });
   }, [campaigns, searchTerm, statusFilter]);
-
-  const handleEditCampaign = (campaign: Campaign) => {
-    setEditingCampaign(campaign);
-  };
 
   return (
     <div>
@@ -67,17 +60,11 @@ const CampaignsPage: React.FC = () => {
 
       {isLoading && <p>Loading campaigns...</p>}
       {isError && <p className="text-red-500">Error loading campaigns.</p>}
-      {!isLoading && !isError && <CampaignList campaigns={filteredCampaigns} onEdit={handleEditCampaign} />}
+      {!isLoading && !isError && <CampaignList campaigns={filteredCampaigns} />}
 
       <CampaignWizard
         isOpen={isWizardOpen}
         onClose={() => setIsWizardOpen(false)}
-      />
-
-      <EditCampaignModal
-        campaign={editingCampaign}
-        isOpen={!!editingCampaign}
-        onClose={() => setEditingCampaign(null)}
       />
     </div>
   );
